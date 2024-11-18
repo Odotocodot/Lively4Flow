@@ -1,21 +1,46 @@
 using System;
 using System.Collections.Generic;
-using Flow.Launcher.Plugin;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace Flow.Launcher.Plugin.Lively
 {
-	public class Lively : IPlugin
+	public class Main : IAsyncPlugin, ISettingProvider, IDisposable
 	{
-		private PluginInitContext _context;
+		private PluginInitContext context;
+		private LivelyPlugin plugin;
+		private ResultCreator resultCreator;
+		private IconProvider iconProvider;
+		private Settings settings;
 
-		public void Init(PluginInitContext context)
+		public async Task InitAsync(PluginInitContext context)
 		{
-			_context = context;
+			this.context = context;
+			context.API.VisibilityChanged += OnVisibilityChanged;
+			settings = context.API.LoadSettingJsonStorage<Settings>();
+			SettingsHelper.Setup(settings, this.context);
 		}
 
-		public List<Result> Query(Query query)
+		private void OnVisibilityChanged(object sender, VisibilityChangedEventArgs args)
 		{
-			return new List<Result>();
+			if (args.IsVisible && !context.CurrentPluginMetadata.Disabled) { }
 		}
+
+		public async Task<List<Result>> QueryAsync(Query query, CancellationToken token) =>
+			throw new NotImplementedException();
+
+		public void Dispose()
+		{
+			context.API.VisibilityChanged -= OnVisibilityChanged;
+		}
+
+		public Control CreateSettingPanel() => throw new NotImplementedException();
 	}
+
+	public class IconProvider { }
+
+	public class ResultCreator { }
+
+	public class LivelyPlugin { }
 }

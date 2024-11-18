@@ -1,12 +1,12 @@
 {
-    "ID": "5C310C539BFF4F47BA15D01AF0173032",
-    "ActionKeyword": "lwm",
-    "Name": "Lively",
-    "Description": "Lively",
-    "Author": "Odotocodot",
-    "Version": "1.0.0",
-    "Language": "csharp",
-    "Website": "https://github.com/Odotocodot/Flow.Launcher.Plugin.Lively",
-    "IcoPath": "icon.png",
-    "ExecuteFileName": "Flow.Launcher.Plugin.Lively.dll"
+  "ID": "5C310C539BFF4F47BA15D01AF0173032",
+  "ActionKeyword": "lwm",
+  "Name": "Lively",
+  "Description": "Lively",
+  "Author": "Odotocodot",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "https://github.com/Odotocodot/Flow.Launcher.Plugin.Lively",
+  "IcoPath": "icon.png",
+  "ExecuteFileName": "Flow.Launcher.Plugin.Lively.dll"
 }
