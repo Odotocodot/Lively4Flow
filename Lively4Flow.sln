@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flow.Launcher.Plugin.Lively", "Flow.Launcher.Plugin.Lively\Flow.Launcher.Plugin.Lively.csproj", "{AC580BB6-94BA-4FDA-95DA-8BBF1D1C82D4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{9A1BFAC0-1EC9-4AE1-BA06-3E0F1FEDF346}"
+	ProjectSection(SolutionItems) = preProject
+		appveyor.yml = appveyor.yml
+		debug.ps1 = debug.ps1
+		Readme.md = Readme.md
+		release.ps1 = release.ps1
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AC580BB6-94BA-4FDA-95DA-8BBF1D1C82D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC580BB6-94BA-4FDA-95DA-8BBF1D1C82D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC580BB6-94BA-4FDA-95DA-8BBF1D1C82D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC580BB6-94BA-4FDA-95DA-8BBF1D1C82D4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
