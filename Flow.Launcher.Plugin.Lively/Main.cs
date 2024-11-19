@@ -15,6 +15,9 @@ namespace Flow.Launcher.Plugin.Lively
 		private IconProvider iconProvider;
 		private Settings settings;
 
+		private bool canLoadWallpapers;
+		private List<Result> results = new();
+
 		public async Task InitAsync(PluginInitContext context)
 		{
 			this.context = context;
@@ -27,29 +30,43 @@ namespace Flow.Launcher.Plugin.Lively
 
 		private void OnVisibilityChanged(object sender, VisibilityChangedEventArgs args)
 		{
-			if (args.IsVisible && !context.CurrentPluginMetadata.Disabled) { }
+			if (context.CurrentPluginMetadata.Disabled)
+				return;
+
+			if (args.IsVisible)
+			{
+				canLoadWallpapers = true;
+			}
+			else
+			{
+				canLoadWallpapers = false;
+				results.Clear();
+			}
 		}
 
 		public async Task<List<Result>> QueryAsync(Query query, CancellationToken token)
 		{
-			List<Result> results = new();
 			if (string.IsNullOrWhiteSpace(query.Search))
-				return results;
+				return resultCreator.Empty();
 
-			var tasks = livelyService.GetWallpapers(token);
-			await foreach (var wallpaper in tasks.ToAsyncEnumerable().WithCancellation(token))
+			if (canLoadWallpapers)
 			{
-				Result result = resultCreator.FromWallpaper(await wallpaper);
-				//context.API.LogInfo("LivelyPlugin", "Created Wallpaper");
-				results.Add(result);
-				ResultsUpdated?.Invoke(this, new ResultUpdatedEventArgs
-				{
-					Query = query,
-					Results = results,
-					Token = token
-				});
-			}
+				canLoadWallpapers = false;
 
+				var tasks = livelyService.GetWallpapers(token);
+				await foreach (var wallpaper in tasks.ToAsyncEnumerable().WithCancellation(token))
+				{
+					Result result = resultCreator.FromWallpaper(await wallpaper);
+					//context.API.LogInfo("LivelyWallpaperController", "Created Wallpaper");
+					results.Add(result);
+					ResultsUpdated?.Invoke(this, new ResultUpdatedEventArgs
+					{
+						Query = query,
+						Results = results,
+						Token = token
+					});
+				}
+			}
 			return results;
 		}
 
