@@ -433,4 +433,7 @@ fabric.properties
 riderModule.iml
 /_ReSharper.Caches/
 
-
+# Reference json files
+Flow.Launcher.Plugin.Lively/TestLivelyInfo.json
+Flow.Launcher.Plugin.Lively/TestSettings.json
+Flow.Launcher.Plugin.Lively/TestWallpaperLayout.json
