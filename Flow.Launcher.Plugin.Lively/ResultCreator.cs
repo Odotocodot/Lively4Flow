@@ -5,12 +5,13 @@ namespace Flow.Launcher.Plugin.Lively
 {
 	public class ResultCreator
 	{
-		public Result FromWallpaper(Wallpaper wallpaper) => new()
+		public Result FromWallpaper(Wallpaper wallpaper, List<int> highlightData = null) => new()
 		{
 			Title = wallpaper.Title,
 			SubTitle = wallpaper.Desc,
 			IcoPath = wallpaper.IconPath,
-			ContextData = wallpaper
+			ContextData = wallpaper,
+			TitleHighlightData = highlightData
 		};
 
 		public List<Result> Empty() => new()

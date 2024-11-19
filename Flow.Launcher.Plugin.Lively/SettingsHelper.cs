@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using Microsoft.Win32;
 
 namespace Flow.Launcher.Plugin.Lively
@@ -13,14 +14,14 @@ namespace Flow.Launcher.Plugin.Lively
 			GitHub,
 			MicrosoftStore
 		}
-		
+
 
 		public static void ForceSetup(Settings settings, PluginInitContext context)
 		{
 			settings.RunSetup = false;
 			Setup(settings, context);
 		}
-		
+
 		public static void Setup(Settings settings, PluginInitContext context)
 		{
 			if (settings.RunSetup)
@@ -54,14 +55,10 @@ namespace Flow.Launcher.Plugin.Lively
 			settings.LivelyExePath = exePath;
 
 			if (FindLivelySettings(context, baseStoragePath, out var settingsPath))
-			{
 				settings.LivelySettingsJsonPath = settingsPath;
-			}
 
 			if (FindLivelyLibraryFolder(context, baseStoragePath, out var libraryPath))
-			{
 				settings.LivelyLibraryFolderPath = libraryPath;
-			}
 
 			Log(context, "Finished quick setup");
 			settings.RunSetup = true;
@@ -87,7 +84,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 			return installType;
 		}
-		
+
 
 		private static bool FindLivelySettings(PluginInitContext context, string baseStoragePath,
 			out string settingsPath)
@@ -99,6 +96,7 @@ namespace Flow.Launcher.Plugin.Lively
 				Log(context, $"Settings.json was found at: \"{settingsPath}\"");
 				return true;
 			}
+
 			Log(context, "Settings.json was NOT found");
 			return false;
 		}
@@ -189,12 +187,10 @@ namespace Flow.Launcher.Plugin.Lively
 
 			return !string.IsNullOrWhiteSpace(exePath);
 		}
-		
-		private static void Log(PluginInitContext context, string message)
+
+		private static void Log(PluginInitContext context, string message, [CallerMemberName] string method = "")
 		{
-			context.API.LogInfo(nameof(SettingsHelper),message, null);
+			context.API.LogInfo("LivelyWallpaperController." + nameof(SettingsHelper), message, method);
 		}
 	}
-
-
 }
