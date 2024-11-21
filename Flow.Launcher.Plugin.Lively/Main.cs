@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using Flow.Launcher.Plugin.Lively.Models;
+using Flow.Launcher.Plugin.SharedModels;
 
 namespace Flow.Launcher.Plugin.Lively
 {
@@ -19,9 +20,9 @@ namespace Flow.Launcher.Plugin.Lively
 		private bool canLoadWallpapers;
 
 		//private List<Result> results = new();
-		private List<Task<Wallpaper>> wallpaperTasks;
+		//private List<Task<Wallpaper>> wallpaperTasks;
 
-		private List<Wallpaper> wallpapers = new();
+		//private List<Wallpaper> wallpapers = new();
 		//private List<(Wallpaper wallpaper, List<int> highlightData)> wallpapers;
 
 		public async Task InitAsync(PluginInitContext context)
@@ -46,10 +47,15 @@ namespace Flow.Launcher.Plugin.Lively
 			else
 			{
 				canLoadWallpapers = false;
-				wallpapers.Clear();
+				livelyService.ClearLoadedWallpapers();
 			}
 		}
 
+
+		private record WallpaperResult(Wallpaper wallpaper)
+		{
+			public List<int> HighlightData { get; set; }
+		}
 		public async Task<List<Result>> QueryAsync(Query query, CancellationToken token)
 		{
 			// if (string.IsNullOrWhiteSpace(query.Search))
@@ -58,26 +64,28 @@ namespace Flow.Launcher.Plugin.Lively
 			if (canLoadWallpapers)
 			{
 				canLoadWallpapers = false;
-				var wallpaperTasks = await livelyService.GetWallpapers(token)
-					.ToAsyncEnumerable()
-					.SelectAwait(async task => await task).ToListAsync(token);
-				
-				// while (wallpaperTasks.Count > 0)
-				// {
-				// 	var task = await Task.WhenAny(wallpaperTasks);
-				// 	wallpaperTasks.Remove(task);
-				//
-				// 	Wallpaper wallpaper = await task;
-				// 	wallpapers.Add(wallpaper);
-				// }
+				await livelyService.LoadWallpapers(token);
 			}
 
 			if (string.IsNullOrWhiteSpace(query.Search))
-				return wallpapers.Select(wp => resultCreator.FromWallpaper(wp)).ToList();
-			else
-				return wallpapers.Where(wp => context.API.FuzzySearch(query.Search, wp.Title).Success)
-					.Select(wp => resultCreator.FromWallpaper(wp))
-					.ToList();
+				return livelyService.Wallpapers.Select(resultCreator.FromWallpaper).ToList();
+
+			if (query.FirstSearch == "!")
+			{
+				return livelyService.Commands.Select(command => command.ToResult()).ToList();
+			}
+			
+			return livelyService.Wallpapers.Select(wallpaper => new WallpaperResult(wallpaper))
+				.Where(value =>
+				{
+					MatchResult matchResult = context.API.FuzzySearch(query.Search, value.wallpaper.Title);
+					value.HighlightData = matchResult.MatchData;
+					return matchResult.Success;
+				})
+				.Select(value => resultCreator.FromWallpaper(value.wallpaper, value.HighlightData))
+				.ToList();
+			
+			
 			// if (canLoadWallpapers)
 			// {
 			// 	canLoadWallpapers = false;

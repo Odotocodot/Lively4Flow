@@ -14,7 +14,10 @@ namespace Flow.Launcher.Plugin.Lively
 		private readonly string localWallpapersPath;
 		private readonly string webWallpapersPath;
 		private readonly PluginInitContext context;
+		private List<Wallpaper> wallpapers = new List<Wallpaper>();
 
+		public IReadOnlyList<Wallpaper> Wallpapers => wallpapers;
+		public Command[] Commands { get; init; }
 		private static class MagicStrings
 		{
 			public const string LivelyInfo = "LivelyInfo.json";
@@ -26,11 +29,17 @@ namespace Flow.Launcher.Plugin.Lively
 			this.context = context;
 			localWallpapersPath = Path.Combine(this.settings.LivelyLibraryFolderPath, "wallpapers");
 			webWallpapersPath = Path.Combine(this.settings.LivelyLibraryFolderPath, "SaveData", "wptmp");
+
+			Commands = new[]
+			{
+				new Command("Set Wallpaper(s)", "set", "Search and set wallpapers", null)
+			};
+
 		}
 
-		public IEnumerable<Task<Wallpaper>> GetWallpapers(CancellationToken ct)
+		public async Task LoadWallpapers(CancellationToken ct)
 		{
-			var wallpapersQuery = Directory.EnumerateDirectories(localWallpapersPath)
+			var wallpaperTasks = Directory.EnumerateDirectories(localWallpapersPath)
 				.Concat(Directory.EnumerateDirectories(webWallpapersPath))
 				.AsParallel()
 				.WithCancellation(ct)
@@ -45,11 +54,37 @@ namespace Flow.Launcher.Plugin.Lively
 					wallpaper.Init(wallpaperFolder);
 					//context.API.LogInfo(nameof(LivelyService), "Finished Model:" + wallpaperFolder);
 					return wallpaper;
-				});
-
-			return wallpapersQuery;
+				})
+				.ToAsyncEnumerable();
+				//.WithCancellation(token);
+			//.SelectAwait(async task => await task).ToListAsync(token);
+				
+			await foreach(var task in wallpaperTasks)
+			{
+				wallpapers.Add(await task);
+			}
 			// var wallpapers = await Task.WhenAll(wallpapersQuery);
 			// return wallpapers;
+			
+			// wallpapers = new List<(Wallpaper wallpaper, List<int> highlightData)>(wallpaperTasks.Count);
+			// foreach (var wallpaperTask in wallpaperTasks)
+			// {
+			// 	Wallpaper wallpaper = await wallpaperTask;
+			// 	wallpapers.Add((wallpaper, context.API.FuzzySearch(query.Search, wallpaper.Title).MatchData));
+			// }
+			// while (wallpaperTasks.Count > 0)
+			// {
+			// 	var task = await Task.WhenAny(wallpaperTasks);
+			// 	wallpaperTasks.Remove(task);
+			//
+			// 	Wallpaper wallpaper = await task;
+			// 	wallpapers.Add(wallpaper);
+			// }
+		}
+
+		public void ClearLoadedWallpapers()
+		{
+			wallpapers.Clear();
 		}
 	}
 }
