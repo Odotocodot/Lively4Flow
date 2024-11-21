@@ -12,21 +12,25 @@ namespace Flow.Launcher.Plugin.Lively
 			Description = description;
 			ResultGetter = resultGetter;
 		}
+
 		public string Name { get; private set; }
 		public string Shortcut { get; private set; }
-		public string Description { get; private set; }
+		public string? Description { get; private set; }
 		public ResultGetter ResultGetter { get; private set; }
 
 		public Result ToResult()
 		{
+			var subTitle = Name;
+
+			if (string.IsNullOrEmpty(Description))
+				subTitle += " - " + Description;
 			return new Result
 			{
 				Title = Shortcut,
-				SubTitle = Description,
+				SubTitle = subTitle
 			};
 		}
 	}
 
-	public delegate List<Result> ResultGetter();
-
+	public delegate List<Result> ResultGetter(Query query);
 }

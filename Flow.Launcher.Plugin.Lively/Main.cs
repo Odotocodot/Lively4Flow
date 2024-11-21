@@ -56,6 +56,7 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			public List<int> HighlightData { get; set; }
 		}
+
 		public async Task<List<Result>> QueryAsync(Query query, CancellationToken token)
 		{
 			// if (string.IsNullOrWhiteSpace(query.Search))
@@ -70,11 +71,9 @@ namespace Flow.Launcher.Plugin.Lively
 			if (string.IsNullOrWhiteSpace(query.Search))
 				return livelyService.Wallpapers.Select(resultCreator.FromWallpaper).ToList();
 
-			if (query.FirstSearch == "!")
-			{
+			if (query.FirstSearch.StartsWith("!"))
 				return livelyService.Commands.Select(command => command.ToResult()).ToList();
-			}
-			
+
 			return livelyService.Wallpapers.Select(wallpaper => new WallpaperResult(wallpaper))
 				.Where(value =>
 				{
@@ -84,8 +83,8 @@ namespace Flow.Launcher.Plugin.Lively
 				})
 				.Select(value => resultCreator.FromWallpaper(value.wallpaper, value.HighlightData))
 				.ToList();
-			
-			
+
+
 			// if (canLoadWallpapers)
 			// {
 			// 	canLoadWallpapers = false;
