@@ -17,7 +17,7 @@ namespace Flow.Launcher.Plugin.Lively
 		private List<Wallpaper> wallpapers = new();
 
 		public IReadOnlyList<Wallpaper> Wallpapers => wallpapers;
-		public Command[] Commands { get; init; }
+		public CommandResult[] Commands { get; init; }
 
 		private static class MagicStrings
 		{
@@ -34,16 +34,19 @@ namespace Flow.Launcher.Plugin.Lively
 			//plural of wallpapers depends on the current wallpaper arrangement
 			Commands = new[]
 			{
-				new Command("Set Wallpaper(s)", "setwp", "Search and set wallpapers", null), //
-				new Command("Set Random Wallpaper(s)", "random", null, null),
-				new Command("Set Wallpaper(s) Volume", "volume", null, null),
-				new Command("Set Wallpaper Layout", "layout", null, null),
-				new Command("Set Wallpaper(s) Playback", "playback", "Play or pause wallpaper(s)", null),
-				new Command("Close Wallpaper(s)", "closewp", null, null),
-				new Command("Open Lively", "open", null, null),
-				new Command("Quit Lively", "quit", null, null)
+				new CommandResult(context, "setwp", "Search and set wallpapers", null), //
+				new CommandResult(context, "random", "Set a random Wallpaper", null),
+				new CommandResult(context, "volume", "Set the volume of a wallpaper", null),
+				new CommandResult(context, "layout", "Change the wallpaper layout", null),
+				new CommandResult(context, "playback", "Pause or play wallpaper playback", null),
+				new CommandResult(context, "closewp", "Close a wallpaper", null),
+				new CommandResult(context, "open", "Open Lively", null),
+				new CommandResult(context, "quit", "Quit Lively",
+					(command, _) => new List<Result> { new() { Title = command.Description, Action = _ => true } })
 			};
 		}
+
+		public void RunCommand(string args) { }
 
 		public async Task LoadWallpapers(CancellationToken token)
 		{
