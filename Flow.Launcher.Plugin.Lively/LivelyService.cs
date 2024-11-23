@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -10,14 +11,17 @@ namespace Flow.Launcher.Plugin.Lively
 {
 	public class LivelyService
 	{
-		private Settings settings;
+		private readonly Settings settings;
 		private readonly string localWallpapersPath;
 		private readonly string webWallpapersPath;
 		private readonly PluginInitContext context;
-		private List<Wallpaper> wallpapers = new();
+		private readonly LivelyCommandApi livelyApi;
+		private readonly List<Wallpaper> wallpapers = new();
+		private readonly CommandCollection commands;
+
+		public KeyedCollection<string, Command> Commands => commands;
 
 		public IReadOnlyList<Wallpaper> Wallpapers => wallpapers;
-		public CommandResult[] Commands { get; init; }
 
 		private static class MagicStrings
 		{
@@ -30,23 +34,22 @@ namespace Flow.Launcher.Plugin.Lively
 			this.context = context;
 			localWallpapersPath = Path.Combine(this.settings.LivelyLibraryFolderPath, "wallpapers");
 			webWallpapersPath = Path.Combine(this.settings.LivelyLibraryFolderPath, "SaveData", "wptmp");
+			livelyApi = new LivelyCommandApi(this.settings);
 
-			//plural of wallpapers depends on the current wallpaper arrangement
-			Commands = new[]
+			commands = new CommandCollection
 			{
-				new CommandResult(context, "setwp", "Search and set wallpapers", null), //
-				new CommandResult(context, "random", "Set a random Wallpaper", null),
-				new CommandResult(context, "volume", "Set the volume of a wallpaper", null),
-				new CommandResult(context, "layout", "Change the wallpaper layout", null),
-				new CommandResult(context, "playback", "Pause or play wallpaper playback", null),
-				new CommandResult(context, "closewp", "Close a wallpaper", null),
-				new CommandResult(context, "open", "Open Lively", null),
-				new CommandResult(context, "quit", "Quit Lively",
-					(command, _) => new List<Result> { new() { Title = command.Description, Action = _ => true } })
+				new Command("setwp", "Search and set wallpapers", null),
+				new Command("random", "Set a random Wallpaper", null),
+				new Command("volume", "Set the volume of a wallpaper", null),
+				new Command("layout", "Change the wallpaper layout", null),
+				new Command("playback", "Pause or play wallpaper playback", null),
+				//new Command("seek", "Set wallpaper playback position", null),
+				new Command("closewp", "Close a wallpaper", null),
+				new Command("open", "Open Lively", null),
+				new Command("quit", "Quit Lively", _ =>
+					ResultCreator.SingleResult("Quit Lively", null, livelyApi.QuitLively, true))
 			};
 		}
-
-		public void RunCommand(string args) { }
 
 		public async Task LoadWallpapers(CancellationToken token)
 		{
@@ -94,6 +97,11 @@ namespace Flow.Launcher.Plugin.Lively
 		public void ClearLoadedWallpapers()
 		{
 			wallpapers.Clear();
+		}
+
+		private class CommandCollection : KeyedCollection<string, Command>
+		{
+			protected override string GetKeyForItem(Command item) => item.Shortcut;
 		}
 	}
 }

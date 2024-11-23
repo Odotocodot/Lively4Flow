@@ -24,7 +24,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 		public static void Setup(Settings settings, PluginInitContext context)
 		{
-			if (settings.RunSetup)
+			if (settings.RunSetup) //TODO if InstallType == None also run
 				return;
 			Log(context, "Starting Setup");
 

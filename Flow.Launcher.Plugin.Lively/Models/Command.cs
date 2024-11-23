@@ -1,30 +1,30 @@
 using System.Collections.Generic;
 
-namespace Flow.Launcher.Plugin.Lively
+namespace Flow.Launcher.Plugin.Lively.Models
 {
-	public class CommandResult
+	public class Command : ISearchableResult
 	{
 		public const string Keyword = "!";
-		private readonly PluginInitContext context;
 
 		//public Command(string name, string shortcut, List<Result> results): this()
-		public CommandResult(PluginInitContext context, string shortcut, string description, ResultGetter resultGetter)
+		public Command(string shortcut, string description, ResultGetter resultGetter)
 		{
-			this.context = context;
-			Description = description;
 			Shortcut = shortcut;
+			Description = description;
 			ResultGetter = resultGetter;
 		}
 
-		public string Description { get; private set; }
 		public string Shortcut { get; private set; }
+		public string Description { get; private set; }
 		public ResultGetter ResultGetter { get; private set; }
+		string ISearchableResult.SearchableString => Shortcut;
 
-		public Result ToResult() => new()
+		Result ISearchableResult.ToResult(PluginInitContext context, List<int> highlightData = null) => new()
 		{
 			Title = Shortcut,
 			SubTitle = Description,
 			ContextData = this,
+			TitleHighlightData = highlightData,
 			Action = _ =>
 			{
 				context.API.ChangeQuery(context.CurrentPluginMetadata.ActionKeyword + " " + Keyword + Shortcut);
@@ -33,5 +33,5 @@ namespace Flow.Launcher.Plugin.Lively
 		};
 	}
 
-	public delegate List<Result> ResultGetter(CommandResult commandResult, Query query);
+	public delegate List<Result> ResultGetter(Query query);
 }

@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using Flow.Launcher.Plugin.Lively.Models;
-using Flow.Launcher.Plugin.SharedModels;
 
 namespace Flow.Launcher.Plugin.Lively
 {
@@ -18,12 +16,6 @@ namespace Flow.Launcher.Plugin.Lively
 		private Settings settings;
 
 		private bool canLoadWallpapers;
-
-		//private List<Result> results = new();
-		//private List<Task<Wallpaper>> wallpaperTasks;
-
-		//private List<Wallpaper> wallpapers = new();
-		//private List<(Wallpaper wallpaper, List<int> highlightData)> wallpapers;
 
 		public async Task InitAsync(PluginInitContext context)
 		{
@@ -51,17 +43,8 @@ namespace Flow.Launcher.Plugin.Lively
 			}
 		}
 
-
-		private record WallpaperResult(Wallpaper wallpaper)
-		{
-			public List<int> HighlightData { get; set; }
-		}
-
 		public async Task<List<Result>> QueryAsync(Query query, CancellationToken token)
 		{
-			// if (string.IsNullOrWhiteSpace(query.Search))
-			// 	return resultCreator.Empty();
-
 			if (canLoadWallpapers)
 			{
 				canLoadWallpapers = false;
@@ -69,21 +52,22 @@ namespace Flow.Launcher.Plugin.Lively
 			}
 
 			if (string.IsNullOrWhiteSpace(query.Search))
-				return livelyService.Wallpapers.Select(resultCreator.FromWallpaper).ToList();
+				return livelyService.Wallpapers.ToResultsList(context);
 
-			if (query.FirstSearch.StartsWith("!"))
-				return livelyService.Commands.Select(command => command.ToResult()).ToList();
+			if (query.FirstSearch.StartsWith(Command.Keyword))
+			{
+				if (query.FirstSearch.Length <= Command.Keyword.Length)
+					return livelyService.Commands.ToResultsList(context);
 
-			return livelyService.Wallpapers.Select(wallpaper => new WallpaperResult(wallpaper))
-				.Where(value =>
-				{
-					MatchResult matchResult = context.API.FuzzySearch(query.Search, value.wallpaper.Title);
-					value.HighlightData = matchResult.MatchData;
-					return matchResult.Success;
-				})
-				.Select(value => resultCreator.FromWallpaper(value.wallpaper, value.HighlightData))
-				.ToList();
+				var search = query.FirstSearch[1..].Trim();
 
+				if (livelyService.Commands.TryGetValue(search, out Command command))
+					return command.ResultGetter(query);
+
+				return livelyService.Commands.FilterToResultsList(context, search);
+			}
+
+			return livelyService.Wallpapers.FilterToResultsList(context, query.Search);
 
 			// if (canLoadWallpapers)
 			// {
@@ -117,10 +101,7 @@ namespace Flow.Launcher.Plugin.Lively
 			});
 		}
 
-		public void Dispose()
-		{
-			context.API.VisibilityChanged -= OnVisibilityChanged;
-		}
+		public void Dispose() => context.API.VisibilityChanged -= OnVisibilityChanged;
 
 		public Control CreateSettingPanel() => throw new NotImplementedException();
 		public event ResultUpdatedEventHandler ResultsUpdated;
