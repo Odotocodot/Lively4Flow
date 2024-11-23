@@ -6,7 +6,6 @@ namespace Flow.Launcher.Plugin.Lively.Models
 	{
 		public const string Keyword = "!";
 
-		//public Command(string name, string shortcut, List<Result> results): this()
 		public Command(string shortcut, string description, ResultGetter resultGetter)
 		{
 			Shortcut = shortcut;
@@ -14,24 +13,29 @@ namespace Flow.Launcher.Plugin.Lively.Models
 			ResultGetter = resultGetter;
 		}
 
-		public string Shortcut { get; private set; }
-		public string Description { get; private set; }
-		public ResultGetter ResultGetter { get; private set; }
+		public string Shortcut { get; }
+		public string Description { get; }
+		public ResultGetter ResultGetter { get; }
 		string ISearchableResult.SearchableString => Shortcut;
 
-		Result ISearchableResult.ToResult(PluginInitContext context, List<int> highlightData = null) => new()
+		Result ISearchableResult.ToResult(LivelyService livelyService, List<int> highlightData = null)
 		{
-			Title = Shortcut,
-			SubTitle = Description,
-			ContextData = this,
-			TitleHighlightData = highlightData,
-			Action = _ =>
+			var autoCompleteText = $"{livelyService.Context.CurrentPluginMetadata.ActionKeyword} {Keyword}{Shortcut} ";
+			return new Result
 			{
-				context.API.ChangeQuery(context.CurrentPluginMetadata.ActionKeyword + " " + Keyword + Shortcut);
-				return false;
-			}
-		};
+				Title = Shortcut,
+				SubTitle = Description,
+				ContextData = this,
+				TitleHighlightData = highlightData,
+				AutoCompleteText = autoCompleteText,
+				Action = _ =>
+				{
+					livelyService.Context.API.ChangeQuery(autoCompleteText);
+					return false;
+				}
+			};
+		}
 	}
 
-	public delegate List<Result> ResultGetter(Query query);
+	public delegate List<Result> ResultGetter(string query);
 }

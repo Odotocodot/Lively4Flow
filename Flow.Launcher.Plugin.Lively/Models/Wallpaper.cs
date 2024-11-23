@@ -26,7 +26,6 @@ namespace Flow.Launcher.Plugin.Lively.Models
 		public string FolderPath { get; private set; }
 		public string IconPath { get; private set; }
 		public string PreviewPath { get; private set; }
-		string ISearchableResult.SearchableString => Title;
 
 		public void Init(string folderPath)
 		{
@@ -35,13 +34,21 @@ namespace Flow.Launcher.Plugin.Lively.Models
 			PreviewPath = Path.Combine(folderPath, Preview);
 		}
 
-		Result ISearchableResult.ToResult(PluginInitContext context, List<int> highlightData = null) => new()
+		string ISearchableResult.SearchableString => Title;
+
+		Result ISearchableResult.ToResult(LivelyService livelyService, List<int> highlightData = null) => new()
 		{
 			Title = Title,
 			SubTitle = Desc,
 			IcoPath = IconPath,
 			ContextData = this,
-			TitleHighlightData = highlightData
+			TitleHighlightData = highlightData,
+			Action = _ =>
+			{
+				//Depends on WallpaperArrangement, if it is PER need to iterate all screens otherwise its fine.
+				livelyService.Api.SetWallpaper(this);
+				return true;
+			}
 		};
 	}
 }

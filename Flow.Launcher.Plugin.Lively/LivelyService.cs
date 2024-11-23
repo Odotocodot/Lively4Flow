@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Flow.Launcher.Plugin.Lively.Models;
+using Screen = System.Windows.Forms.Screen;
 
 namespace Flow.Launcher.Plugin.Lively
 {
@@ -22,11 +23,10 @@ namespace Flow.Launcher.Plugin.Lively
 		public KeyedCollection<string, Command> Commands => commands;
 
 		public IReadOnlyList<Wallpaper> Wallpapers => wallpapers;
+		public PluginInitContext Context => context;
+		public LivelyCommandApi Api => livelyApi;
 
-		private static class MagicStrings
-		{
-			public const string LivelyInfo = "LivelyInfo.json";
-		}
+		public int GetNumberOfMontiors() => Screen.AllScreens.Length;
 
 		public LivelyService(Settings settings, PluginInitContext context)
 		{
@@ -38,13 +38,13 @@ namespace Flow.Launcher.Plugin.Lively
 
 			commands = new CommandCollection
 			{
-				new Command("setwp", "Search and set wallpapers", null),
+				new Command("setwp", "Search and set wallpapers", query => wallpapers.FilterToResultsList(this, query)),
 				new Command("random", "Set a random Wallpaper", null),
+				new Command("closewp", "Close a wallpaper", null),
 				new Command("volume", "Set the volume of a wallpaper", null),
 				new Command("layout", "Change the wallpaper layout", null),
 				new Command("playback", "Pause or play wallpaper playback", null),
 				//new Command("seek", "Set wallpaper playback position", null),
-				new Command("closewp", "Close a wallpaper", null),
 				new Command("open", "Open Lively", null),
 				new Command("quit", "Quit Lively", _ =>
 					ResultCreator.SingleResult("Quit Lively", null, livelyApi.QuitLively, true))
@@ -61,7 +61,7 @@ namespace Flow.Launcher.Plugin.Lively
 				.Select(async wallpaperFolder =>
 				{
 					//context.API.LogInfo(nameof(LivelyService), "Creating Model:" + wallpaperFolder);
-					var path = Path.Combine(wallpaperFolder, MagicStrings.LivelyInfo);
+					var path = Path.Combine(wallpaperFolder, "LivelyInfo.json");
 					await using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 					var wallpaper =
 						await JsonSerializer.DeserializeAsync<Wallpaper>(file, JsonSerializerOptions.Default, token);

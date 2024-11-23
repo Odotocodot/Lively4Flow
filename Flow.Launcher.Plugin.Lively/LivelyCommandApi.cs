@@ -12,8 +12,10 @@ namespace Flow.Launcher.Plugin.Lively
 			this.settings = settings;
 		}
 
-		public void SetWallpaper(Wallpaper wp, int monitorIndex) =>
-			ShellRun($"setwp --file \"{wp.FolderPath}\" --monitor {monitorIndex}");
+		public void SetWallpaper(Wallpaper wallpaper, int monitorIndex) =>
+		//ShellRun($"setwp --file \"{wallpaper.FolderPath}\" --monitor {monitorIndex}");
+
+		public void SetWallpaper(Wallpaper wallpaper) => //ShellRun($"setwp --file \"{wallpaper.FolderPath}\"");
 
 		public void RandomiseWallpaper() => InternalRandomiseWallpaper(null);
 		public void RandomiseWallpaper(int monitorIndex) => InternalRandomiseWallpaper(monitorIndex);
@@ -29,9 +31,17 @@ namespace Flow.Launcher.Plugin.Lively
 		public void OpenLively() => ShellRun("--showApp true");
 		public void QuitLively() => ShellRun("--shutdown true");
 
-		private void InternalRandomiseWallpaper(int? monitorIndex)
+		// private void InternalRandomiseWallpaper(int? monitorIndex)
+		// {
+		// 	var args = "setwp --file random";
+		// 	if (monitorIndex.HasValue)
+		// 		args += $"--monitor {monitorIndex.Value}";
+		// 	ShellRun(args);
+		// }
+
+		private void InternalSetWallpaper(string wallpaperPath, int? monitorIndex)
 		{
-			var args = "setwp --file random";
+			var args = $"setwp --file \"{wallpaperPath}\"";
 			if (monitorIndex.HasValue)
 				args += $"--monitor {monitorIndex.Value}";
 			ShellRun(args);

@@ -52,22 +52,30 @@ namespace Flow.Launcher.Plugin.Lively
 			}
 
 			if (string.IsNullOrWhiteSpace(query.Search))
-				return livelyService.Wallpapers.ToResultsList(context);
+			{
+				var results = livelyService.Wallpapers.ToResultsList(livelyService);
+				results.Insert(0, new Result
+				{
+					Title = "Type '!' to view commands",
+					Score = 10000
+				});
+				return results;
+			}
 
 			if (query.FirstSearch.StartsWith(Command.Keyword))
 			{
 				if (query.FirstSearch.Length <= Command.Keyword.Length)
-					return livelyService.Commands.ToResultsList(context);
+					return livelyService.Commands.ToResultsList(livelyService);
 
-				var search = query.FirstSearch[1..].Trim();
+				var commandQuery = query.FirstSearch[1..].Trim();
 
-				if (livelyService.Commands.TryGetValue(search, out Command command))
-					return command.ResultGetter(query);
+				if (livelyService.Commands.TryGetValue(commandQuery, out Command command))
+					return command.ResultGetter(query.SecondToEndSearch);
 
-				return livelyService.Commands.FilterToResultsList(context, search);
+				return livelyService.Commands.FilterToResultsList(livelyService, commandQuery);
 			}
 
-			return livelyService.Wallpapers.FilterToResultsList(context, query.Search);
+			return livelyService.Wallpapers.FilterToResultsList(livelyService, query.Search);
 
 			// if (canLoadWallpapers)
 			// {
