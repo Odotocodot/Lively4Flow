@@ -9,7 +9,7 @@ namespace Flow.Launcher.Plugin.Lively
 		Result ToResult(LivelyService livelyService, List<int> highlightData = null);
 	}
 
-	public static class SearchableResultExtensions
+	public static class SearchableResultExtensions //TODO maybe move to ResultCreator.cs and make it static?
 	{
 		public static List<Result> FilterToResultsList<T>(this IReadOnlyList<T> source, LivelyService livelyService,
 			string query)

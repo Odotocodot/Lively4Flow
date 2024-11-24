@@ -26,7 +26,7 @@ namespace Flow.Launcher.Plugin.Lively
 		public PluginInitContext Context => context;
 		public LivelyCommandApi Api => livelyApi;
 
-		public int GetNumberOfMontiors() => Screen.AllScreens.Length;
+		public int MonitorCount => Screen.AllScreens.Length;
 
 		public LivelyService(Settings settings, PluginInitContext context)
 		{

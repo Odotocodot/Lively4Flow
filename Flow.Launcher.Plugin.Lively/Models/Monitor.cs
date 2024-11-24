@@ -1,6 +1,6 @@
 namespace Flow.Launcher.Plugin.Lively.Models
 {
-	public record Screen(
+	public record Monitor(
 		//bool isStale,
 		//string Bounds,
 		//string DeviceId,

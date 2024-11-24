@@ -45,7 +45,6 @@ namespace Flow.Launcher.Plugin.Lively.Models
 			TitleHighlightData = highlightData,
 			Action = _ =>
 			{
-				//Depends on WallpaperArrangement, if it is PER need to iterate all screens otherwise its fine.
 				livelyService.Api.SetWallpaper(this);
 				return true;
 			}

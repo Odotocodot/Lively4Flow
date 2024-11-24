@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 namespace Flow.Launcher.Plugin.Lively.Models
 {
-	public class Command : ISearchableResult
+	public class Command : ISearchableResult //TODO convert to record
 	{
-		public const string Keyword = "!";
+		public const string Keyword = "!"; //TODO move to Constants.cs
 
 		public Command(string shortcut, string description, ResultGetter resultGetter)
 		{
