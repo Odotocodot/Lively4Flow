@@ -20,32 +20,62 @@ namespace Flow.Launcher.Plugin.Lively
 						ContextData = arrangement,
 						Action = _ =>
 						{
-							//TODO reapply the current wallpapers, reset the query 
+							//TODO reapply the current wallpapers, reset the query, update the in memory value of the arrangement
 							livelyService.Api.SetWallpaperLayout(arrangement);
+							livelyService.Context.API.ChangeQuery(livelyService.Context.CurrentPluginMetadata
+								.ActionKeyword);
 							return true;
 						}
 					};
 				})
 				.ToList();
+
+		public static List<Result> RandomiseCommand(LivelyService livelyService)
+		{
+			var singleMonitor = livelyService.MonitorCount == 1;
+			var results = new List<Result>();
+			results.Add(new Result
+			{
+				Title = $"Set a random wallpaper {(singleMonitor ? "" : "on all monitors")}",
+				Action = _ =>
+				{
+					livelyService.Api.RandomiseWallpaper();
+					return true;
+				}
+			});
+			if (!singleMonitor)
+				livelyService.IterateMonitors(index =>
+				{
+					results.Add(new Result
+					{
+						Title = $"Set a random wallpaper on monitor {index}",
+						Action = _ =>
+						{
+							livelyService.Api.RandomiseWallpaper(index);
+							return true;
+						}
+					});
+				});
+			return results;
+		}
 	}
 
 
 	public static class ResultCreator
 	{
-		public static List<Result> SingleResult(string title, string iconPath, Action action, bool closeOnAction) =>
-			new()
+		public static List<Result> SingleResult(string title, string iconPath, Action action, bool closeFlow) => new()
+		{
+			new Result
 			{
-				new Result
+				Title = title,
+				IcoPath = iconPath,
+				Action = _ =>
 				{
-					Title = title,
-					IcoPath = iconPath,
-					Action = _ =>
-					{
-						action();
-						return closeOnAction;
-					}
+					action();
+					return closeFlow;
 				}
-			};
+			}
+		};
 
 		public static List<Result> FilterToResultsList<T>(this IReadOnlyList<T> source, LivelyService livelyService,
 			string query)

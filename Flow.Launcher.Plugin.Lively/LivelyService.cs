@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -21,7 +22,7 @@ namespace Flow.Launcher.Plugin.Lively
 		private readonly CommandCollection commands;
 
 		public KeyedCollection<string, Command> Commands => commands;
-		public IReadOnlyList<Wallpaper> Wallpapers => wallpapers;
+		public IReadOnlyList<Wallpaper> Wallpapers => wallpapers; //TODO maybe make an observable collection?
 		public PluginInitContext Context => context;
 		public LivelyCommandApi Api => livelyApi;
 		public WallpaperArrangement WallpaperArrangement { get; private set; }
@@ -38,7 +39,7 @@ namespace Flow.Launcher.Plugin.Lively
 			commands = new CommandCollection
 			{
 				new Command("setwp", "Search and set wallpapers", query => wallpapers.FilterToResultsList(this, query)),
-				new Command("random", "Set a random Wallpaper", null),
+				new Command("random", "Set a random Wallpaper", _ => ResultFrom.RandomiseCommand(this)),
 				new Command("closewp", "Close a wallpaper", null),
 				new Command("volume", "Set the volume of a wallpaper", null),
 				new Command("layout", "Change the wallpaper layout", _ => ResultFrom.WallpaperArrangements(this)),
@@ -49,6 +50,7 @@ namespace Flow.Launcher.Plugin.Lively
 					ResultCreator.SingleResult("Quit Lively", null, livelyApi.QuitLively, true))
 			};
 		}
+
 
 		public async Task LoadLivelySettings(CancellationToken token)
 		{
@@ -99,6 +101,13 @@ namespace Flow.Launcher.Plugin.Lively
 			// 	Wallpaper wallpaper = await task;
 			// 	wallpapers.Add(wallpaper);
 			// }
+		}
+
+		//Lively monitor indexes are not zero indexed, hence this method for ease
+		public void IterateMonitors(Action<int> action)
+		{
+			for (var i = 1; i < MonitorCount + 1; i++)
+				action(i);
 		}
 
 		public void ClearLoadedWallpapers()

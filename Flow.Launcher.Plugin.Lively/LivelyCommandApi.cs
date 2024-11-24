@@ -20,8 +20,7 @@ namespace Flow.Launcher.Plugin.Lively
 			switch (livelyService.WallpaperArrangement)
 			{
 				case WallpaperArrangement.Per:
-					for (var i = 0; i < livelyService.MonitorCount; i++)
-						SetWallpaper(wallpaper, i);
+					livelyService.IterateMonitors(index => SetWallpaper(wallpaper, index));
 					break;
 				case WallpaperArrangement.Span:
 				case WallpaperArrangement.Duplicate:
@@ -51,7 +50,7 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			var args = $"setwp --file \"{wallpaperPath}\"";
 			if (monitorIndex.HasValue)
-				args += $"--monitor {monitorIndex.Value}";
+				args += $" --monitor {monitorIndex.Value}";
 			ShellRun(args);
 		}
 
