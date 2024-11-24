@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Flow.Launcher.Plugin.Lively
 {
@@ -19,5 +20,11 @@ namespace Flow.Launcher.Plugin.Lively
 					}
 				}
 			};
+
+
+		public static List<Result> WallpaperArrangementResults(LivelyService livelyService)
+		{
+			return Enum.GetValues<WallpaperArrangement>().Select(value => value.ToResult(livelyService)).ToList();
+		}
 	}
 }

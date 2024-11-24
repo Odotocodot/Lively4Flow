@@ -48,7 +48,7 @@ namespace Flow.Launcher.Plugin.Lively
 			if (canLoadWallpapers)
 			{
 				canLoadWallpapers = false;
-				await livelyService.LoadWallpapers(token);
+				await Task.WhenAll(livelyService.LoadWallpapers(token), livelyService.LoadLivelySettings(token));
 			}
 
 			if (string.IsNullOrWhiteSpace(query.Search))

@@ -16,16 +16,15 @@ namespace Flow.Launcher.Plugin.Lively
 		private readonly string localWallpapersPath;
 		private readonly string webWallpapersPath;
 		private readonly PluginInitContext context;
-		private readonly LivelyCommandApi livelyApi;
 		private readonly List<Wallpaper> wallpapers = new();
+		private readonly LivelyCommandApi livelyApi;
 		private readonly CommandCollection commands;
 
 		public KeyedCollection<string, Command> Commands => commands;
-
 		public IReadOnlyList<Wallpaper> Wallpapers => wallpapers;
 		public PluginInitContext Context => context;
 		public LivelyCommandApi Api => livelyApi;
-
+		public WallpaperArrangement WallpaperArrangement { get; private set; }
 		public int MonitorCount => Screen.AllScreens.Length;
 
 		public LivelyService(Settings settings, PluginInitContext context)
@@ -34,7 +33,7 @@ namespace Flow.Launcher.Plugin.Lively
 			this.context = context;
 			localWallpapersPath = Path.Combine(this.settings.LivelyLibraryFolderPath, "wallpapers");
 			webWallpapersPath = Path.Combine(this.settings.LivelyLibraryFolderPath, "SaveData", "wptmp");
-			livelyApi = new LivelyCommandApi(this.settings);
+			livelyApi = new LivelyCommandApi(this.settings, this);
 
 			commands = new CommandCollection
 			{
@@ -42,13 +41,22 @@ namespace Flow.Launcher.Plugin.Lively
 				new Command("random", "Set a random Wallpaper", null),
 				new Command("closewp", "Close a wallpaper", null),
 				new Command("volume", "Set the volume of a wallpaper", null),
-				new Command("layout", "Change the wallpaper layout", null),
+				new Command("layout", "Change the wallpaper layout",
+					_ => ResultCreator.WallpaperArrangementResults(this)),
 				new Command("playback", "Pause or play wallpaper playback", null),
 				//new Command("seek", "Set wallpaper playback position", null),
 				new Command("open", "Open Lively", null),
 				new Command("quit", "Quit Lively", _ =>
 					ResultCreator.SingleResult("Quit Lively", null, livelyApi.QuitLively, true))
 			};
+		}
+
+		public async Task LoadLivelySettings(CancellationToken token)
+		{
+			await using var file = new FileStream(settings.LivelySettingsJsonPath, FileMode.Open, FileAccess.Read);
+			var livelySettings =
+				await JsonSerializer.DeserializeAsync<LivelySettings>(file, JsonSerializerOptions.Default, token);
+			WallpaperArrangement = livelySettings.WallpaperArrangement;
 		}
 
 		public async Task LoadWallpapers(CancellationToken token)
