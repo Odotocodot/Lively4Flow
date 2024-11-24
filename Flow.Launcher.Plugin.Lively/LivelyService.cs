@@ -17,9 +17,11 @@ namespace Flow.Launcher.Plugin.Lively
 		private readonly string localWallpapersPath;
 		private readonly string webWallpapersPath;
 		private readonly PluginInitContext context;
-		private readonly List<Wallpaper> wallpapers = new();
 		private readonly LivelyCommandApi livelyApi;
 		private readonly CommandCollection commands;
+		private readonly List<Wallpaper> wallpapers = new();
+
+		private ILookup<string, int> activeWallpapers;
 
 		public KeyedCollection<string, Command> Commands => commands;
 		public IReadOnlyList<Wallpaper> Wallpapers => wallpapers; //TODO maybe make an observable collection?
@@ -58,6 +60,26 @@ namespace Flow.Launcher.Plugin.Lively
 			var livelySettings =
 				await JsonSerializer.DeserializeAsync<LivelySettings>(file, JsonSerializerOptions.Default, token);
 			WallpaperArrangement = livelySettings.WallpaperArrangement;
+		}
+
+		public async Task LoadCurrentWallpaper(CancellationToken token)
+		{
+			var path = Path.Combine(Path.GetDirectoryName(settings.LivelySettingsJsonPath), "WallpaperLayout.json");
+			await using var file = new FileStream(path, FileMode.Open, FileAccess.Read);
+
+			var wallpaperLayout = await JsonSerializer.DeserializeAsync<WallpaperLayout[]>(file,
+				JsonSerializerOptions.Default,
+				token);
+
+			//Because of this line of code, the WallpaperLayout.json must be loaded before any wallpapers
+			activeWallpapers =
+				wallpaperLayout.ToLookup(layout => layout.LivelyInfoPath, layout => layout.LivelyScreen.Index);
+		}
+
+		public bool IsActiveWallpaper(Wallpaper wallpaper, out IEnumerable<int> livelyMonitorIndexes)
+		{
+			livelyMonitorIndexes = activeWallpapers[wallpaper.FolderPath];
+			return livelyMonitorIndexes.Any();
 		}
 
 		public async Task LoadWallpapers(CancellationToken token)

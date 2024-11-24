@@ -46,7 +46,9 @@ namespace Flow.Launcher.Plugin.Lively
 			if (canLoadWallpapers)
 			{
 				canLoadWallpapers = false;
-				await Task.WhenAll(livelyService.LoadWallpapers(token), livelyService.LoadLivelySettings(token));
+				await Task.WhenAll(livelyService.LoadLivelySettings(token),
+					livelyService.LoadCurrentWallpaper(token));
+				await livelyService.LoadWallpapers(token);
 			}
 
 			if (string.IsNullOrWhiteSpace(query.Search))
@@ -54,8 +56,15 @@ namespace Flow.Launcher.Plugin.Lively
 				var results = livelyService.Wallpapers.ToResultsList(livelyService);
 				results.Insert(0, new Result
 				{
-					Title = "Type '!' to view commands",
-					Score = 10000
+					Title = "View Lively commands",
+					SubTitle = $"Type '{Command.Keyword}' or select this result to view commands",
+					Score = 100000,
+					AutoCompleteText = $"{context.CurrentPluginMetadata.ActionKeyword} {Command.Keyword}",
+					Action = _ =>
+					{
+						context.API.ChangeQuery($"{context.CurrentPluginMetadata.ActionKeyword} {Command.Keyword}");
+						return false;
+					}
 				});
 				return results;
 			}

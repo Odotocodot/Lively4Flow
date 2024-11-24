@@ -5,15 +5,24 @@ using Flow.Launcher.Plugin.SharedModels;
 
 namespace Flow.Launcher.Plugin.Lively
 {
+	public static class Results
+	{
+		public static class From { }
+	}
+
 	public static class ResultFrom
 	{
+		public const string SelectedEmoji = "\u2605"; //or ⭐\u2b50
+
 		public static List<Result> WallpaperArrangements(LivelyService livelyService) =>
 			Enum.GetValues<WallpaperArrangement>()
 				.Select(arrangement =>
 				{
-					var title = Enum.GetName(arrangement);
-					if (arrangement == livelyService.WallpaperArrangement)
-						title = $"\u2605 {title}"; //or ⭐\u2b50
+					var name = Enum.GetName(arrangement);
+					var title = arrangement == livelyService.WallpaperArrangement
+						? $"{SelectedEmoji} {name}"
+						: name;
+
 					return new Result
 					{
 						Title = title,
@@ -22,13 +31,25 @@ namespace Flow.Launcher.Plugin.Lively
 						{
 							//TODO reapply the current wallpapers, reset the query, update the in memory value of the arrangement
 							livelyService.Api.SetWallpaperLayout(arrangement);
-							livelyService.Context.API.ChangeQuery(livelyService.Context.CurrentPluginMetadata
-								.ActionKeyword);
+							// livelyService.Context.API.ChangeQuery(livelyService.Context.CurrentPluginMetadata
+							// 	.ActionKeyword);
 							return true;
 						}
 					};
 				})
 				.ToList();
+
+		public static string OffsetTitle(string title, string offset, List<int> highlightData)
+		{
+			title = title.Insert(0, offset);
+
+			if (highlightData == null)
+				return title;
+
+			for (var i = 0; i < highlightData.Count; i++)
+				highlightData[i] += offset.Length;
+			return title;
+		}
 
 		public static List<Result> RandomiseCommand(LivelyService livelyService)
 		{

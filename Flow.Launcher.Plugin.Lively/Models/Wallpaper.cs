@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Flow.Launcher.Plugin.Lively.Models
 {
@@ -36,18 +37,28 @@ namespace Flow.Launcher.Plugin.Lively.Models
 
 		string ISearchableResult.SearchableString => Title;
 
-		Result ISearchableResult.ToResult(LivelyService livelyService, List<int> highlightData = null) => new()
+		Result ISearchableResult.ToResult(LivelyService livelyService, List<int> highlightData)
 		{
-			Title = Title,
-			SubTitle = Desc,
-			IcoPath = IconPath,
-			ContextData = this,
-			TitleHighlightData = highlightData,
-			Action = _ =>
+			var title = Title;
+			if (livelyService.IsActiveWallpaper(this, out var monitorIndexes))
+				title = ResultFrom.OffsetTitle(title,
+					$"[{ResultFrom.SelectedEmoji} {string.Join(", ", monitorIndexes.Order())}] ",
+					highlightData);
+
+			return new Result
 			{
-				livelyService.Api.SetWallpaper(this);
-				return true;
-			}
-		};
+				Title = title,
+				SubTitle = Desc,
+				IcoPath = IconPath,
+				ContextData = this,
+				TitleHighlightData = highlightData,
+				Action = _ =>
+				{
+					livelyService.Api.SetWallpaper(this);
+					livelyService.Context.API.ReQuery();
+					return true;
+				}
+			};
+		}
 	}
 }
