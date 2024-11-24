@@ -11,7 +11,6 @@ namespace Flow.Launcher.Plugin.Lively
 	{
 		private PluginInitContext context;
 		private LivelyService livelyService;
-		private ResultCreator resultCreator;
 		private IconProvider iconProvider;
 		private Settings settings;
 
@@ -24,7 +23,6 @@ namespace Flow.Launcher.Plugin.Lively
 			settings = context.API.LoadSettingJsonStorage<Settings>();
 			SettingsHelper.Setup(settings, this.context);
 			livelyService = new LivelyService(settings, context);
-			resultCreator = new ResultCreator();
 		}
 
 		private void OnVisibilityChanged(object sender, VisibilityChangedEventArgs args)
