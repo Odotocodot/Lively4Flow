@@ -35,26 +35,30 @@ namespace Flow.Launcher.Plugin.Lively
 		public void RandomiseWallpaper() => InternalSetWallpaper("random", null);
 		public void RandomiseWallpaper(int monitorIndex) => InternalSetWallpaper("random", monitorIndex);
 
-		public void SetVolume(int value) => ShellRun($"--volume {value}");
+		public void SetVolume(int value) => RunCommand($"--volume {value}");
 
 		public void SetWallpaperLayout(WallpaperArrangement arrangement) =>
-			ShellRun($"--layout {Enum.GetName(arrangement)!.ToLower()}");
+			RunCommand($"--layout {Enum.GetName(arrangement)!.ToLower()}");
 
-		public void WallpaperPlayback(bool playbackState) => ShellRun($"--play {playbackState}");
-		public void CloseWallpaper(int monitorIndex) => ShellRun($"closewp --monitor {monitorIndex}");
+		public void WallpaperPlayback(bool playbackState) => RunCommand($"--play {playbackState}");
+		public void CloseWallpaper(int monitorIndex) => InternalCloseWallpaper(monitorIndex);
+		public void CloseWallpaper() => InternalCloseWallpaper(-1);
 
-		public void OpenLively() => ShellRun("--showApp true");
-		public void QuitLively() => ShellRun("--shutdown true");
+
+		public void OpenLively() => RunCommand("--showApp true");
+		public void QuitLively() => RunCommand("--shutdown true");
 
 		private void InternalSetWallpaper(string wallpaperPath, int? monitorIndex)
 		{
 			var args = $"setwp --file \"{wallpaperPath}\"";
 			if (monitorIndex.HasValue)
 				args += $" --monitor {monitorIndex.Value}";
-			ShellRun(args);
+			RunCommand(args);
 		}
 
-		private void ShellRun(string args)
+		private void InternalCloseWallpaper(int monitorIndex) => RunCommand($"closewp --monitor {monitorIndex}");
+
+		private void RunCommand(string args)
 		{
 			Process.Start(new ProcessStartInfo
 			{

@@ -24,7 +24,7 @@ namespace Flow.Launcher.Plugin.Lively
 		private ILookup<string, int> activeWallpapers;
 
 		public KeyedCollection<string, Command> Commands => commands;
-		public IReadOnlyList<Wallpaper> Wallpapers => wallpapers; //TODO maybe make an observable collection?
+		public IReadOnlyList<Wallpaper> Wallpapers => wallpapers; //TODO maybe make an observable Dictionary collection?
 		public PluginInitContext Context => context;
 		public LivelyCommandApi Api => livelyApi;
 		public WallpaperArrangement WallpaperArrangement { get; private set; }
@@ -42,7 +42,7 @@ namespace Flow.Launcher.Plugin.Lively
 			{
 				new Command("setwp", "Search and set wallpapers", query => wallpapers.FilterToResultsList(this, query)),
 				new Command("random", "Set a random Wallpaper", _ => ResultFrom.RandomiseCommand(this)),
-				new Command("closewp", "Close a wallpaper", null),
+				new Command("closewp", "Close a wallpaper", _ => ResultFrom.CloseCommand(this)),
 				new Command("volume", "Set the volume of a wallpaper", null),
 				new Command("layout", "Change the wallpaper layout", _ => ResultFrom.WallpaperArrangements(this)),
 				new Command("playback", "Pause or play wallpaper playback", null),
@@ -80,6 +80,12 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			livelyMonitorIndexes = activeWallpapers[wallpaper.FolderPath];
 			return livelyMonitorIndexes.Any();
+		}
+
+		public bool GetActiveMonitorIndexes(out IEnumerable<int> activeIndexes)
+		{
+			activeIndexes = activeWallpapers.SelectMany(group => group).Order();
+			return activeIndexes.Any();
 		}
 
 		public async Task LoadWallpapers(CancellationToken token)

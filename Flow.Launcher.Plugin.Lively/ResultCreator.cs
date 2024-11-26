@@ -13,6 +13,8 @@ namespace Flow.Launcher.Plugin.Lively
 	public static class ResultFrom
 	{
 		public const string SelectedEmoji = "\u2605"; //or ⭐\u2b50
+		private static string AppendAllMonitors(bool singleMonitor) => singleMonitor ? "" : " on all monitors";
+
 
 		public static List<Result> WallpaperArrangements(LivelyService livelyService) =>
 			Enum.GetValues<WallpaperArrangement>()
@@ -55,29 +57,70 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			var singleMonitor = livelyService.MonitorCount == 1;
 			var results = new List<Result>();
+			const string prefix = "Set a random wallpaper";
 			results.Add(new Result
 			{
-				Title = $"Set a random wallpaper {(singleMonitor ? "" : "on all monitors")}",
+				Title = $"{prefix}{AppendAllMonitors(singleMonitor)}",
 				Action = _ =>
 				{
 					livelyService.Api.RandomiseWallpaper();
 					return true;
 				}
 			});
-			if (!singleMonitor)
-				livelyService.IterateMonitors(index =>
-				{
-					results.Add(new Result
-					{
-						Title = $"Set a random wallpaper on monitor {index}",
-						Action = _ =>
-						{
-							livelyService.Api.RandomiseWallpaper(index);
-							return true;
-						}
-					});
-				});
+			if (singleMonitor)
+				return results;
+
+			livelyService.IterateMonitors(index =>
+				results.Add(GetMonitorIndexResult(prefix, index, i => livelyService.Api.RandomiseWallpaper(i))));
+
 			return results;
+		}
+
+		public static List<Result> CloseCommand(LivelyService livelyService)
+		{
+			if (!livelyService.GetActiveMonitorIndexes(out var activeIndexes))
+				return ResultCreator.SingleResult("No active Lively wallpapers", null, null, false);
+
+			var indexes = activeIndexes.ToList();
+			var results = new List<Result>();
+
+			const string prefix = "Close active wallpaper";
+
+			if (livelyService.MonitorCount == 1
+			    || livelyService.WallpaperArrangement != WallpaperArrangement.Per
+			    || indexes.Count > 1)
+				results.Add(new Result
+				{
+					Title = $"{prefix}{AppendAllMonitors(indexes.Count <= 1)}",
+					//TODO SubTitle = ""The name of the monitor
+					Action = _ =>
+					{
+						livelyService.Api.CloseWallpaper();
+						return true;
+					}
+				});
+
+			if (livelyService.WallpaperArrangement != WallpaperArrangement.Per)
+				return results;
+
+			for (var i = 0; i < indexes.Count; i++)
+				results.Add(GetMonitorIndexResult(prefix, indexes[i],
+					index => livelyService.Api.CloseWallpaper(index)));
+
+			return results;
+		}
+
+		private static Result GetMonitorIndexResult(string prefix, int index, Action<int> action)
+		{
+			return new Result
+			{
+				Title = $"{prefix} on monitor {index}",
+				Action = _ =>
+				{
+					action(index);
+					return true;
+				}
+			};
 		}
 	}
 
@@ -92,7 +135,7 @@ namespace Flow.Launcher.Plugin.Lively
 				IcoPath = iconPath,
 				Action = _ =>
 				{
-					action();
+					action?.Invoke();
 					return closeFlow;
 				}
 			}
