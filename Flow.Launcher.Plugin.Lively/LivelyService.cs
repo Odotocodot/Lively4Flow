@@ -45,11 +45,10 @@ namespace Flow.Launcher.Plugin.Lively
 				new Command("closewp", "Close a wallpaper", _ => Results.For.CloseCommand(this)),
 				new Command("volume", "Set the volume of a wallpaper", query => Results.For.VolumeCommand(this, query)),
 				new Command("layout", "Change the wallpaper layout", _ => Results.For.WallpaperArrangements(this)),
-				new Command("playback", "Pause or play wallpaper playback", null),
+				new Command("playback", "Pause or play wallpaper playback", _ => Results.For.PlaybackCommand(this)),
 				//new Command("seek", "Set wallpaper playback position", null),
 				new Command("open", "Open Lively", null),
-				new Command("quit", "Quit Lively", _ =>
-					Results.SingleResult("Quit Lively", null, livelyApi.QuitLively, true))
+				new Command("quit", "Quit Lively", _ => Results.SingleResult("Quit Lively", null, Api.QuitLively, true))
 			};
 		}
 

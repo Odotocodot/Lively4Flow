@@ -49,7 +49,7 @@ namespace Flow.Launcher.Plugin.Lively
 					results.Add(new Result
 					{
 						Title = $"{prefix}{AppendAllMonitors(indexes.Count <= 1)}",
-						//TODO SubTitle = ""The name of the monitor
+						//TODO SubTitle = "" //The name of the wallpaper
 						Action = _ =>
 						{
 							livelyService.Api.CloseWallpaper();
@@ -123,6 +123,30 @@ namespace Flow.Launcher.Plugin.Lively
 					}
 				};
 			}
+
+			public static List<Result> PlaybackCommand(LivelyService livelyService) => new()
+			{
+				new Result
+				{
+					Title = "Resume wallpaper playback",
+					Score = 2000,
+					Action = _ =>
+					{
+						livelyService.Api.WallpaperPlayback(true);
+						return true;
+					}
+				},
+				new Result
+				{
+					Title = "Pause wallpaper playback",
+					Score = 0,
+					Action = _ =>
+					{
+						livelyService.Api.WallpaperPlayback(false);
+						return true;
+					}
+				}
+			};
 
 			public static List<Result> WallpaperArrangements(LivelyService livelyService) =>
 				Enum.GetValues<WallpaperArrangement>()
