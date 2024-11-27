@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace Flow.Launcher.Plugin.Lively.Models
 {
@@ -21,7 +19,7 @@ namespace Flow.Launcher.Plugin.Lively.Models
 		//string Id,
 		//List<string> Tags,
 		//int Version
-	) : ISearchableResult
+	) : ISearchable
 	{
 		//Could move this to another type?
 		public string FolderPath { get; private set; }
@@ -35,30 +33,6 @@ namespace Flow.Launcher.Plugin.Lively.Models
 			PreviewPath = Path.Combine(folderPath, Preview);
 		}
 
-		string ISearchableResult.SearchableString => Title;
-
-		Result ISearchableResult.ToResult(LivelyService livelyService, List<int> highlightData)
-		{
-			var title = Title;
-			if (livelyService.IsActiveWallpaper(this, out var monitorIndexes))
-				title = ResultFrom.OffsetTitle(title,
-					$"[{ResultFrom.SelectedEmoji} {string.Join(", ", monitorIndexes.Order())}] ",
-					highlightData);
-
-			return new Result
-			{
-				Title = title,
-				SubTitle = Desc,
-				IcoPath = IconPath,
-				ContextData = this,
-				TitleHighlightData = highlightData,
-				Action = _ =>
-				{
-					livelyService.Api.SetWallpaper(this);
-					livelyService.Context.API.ReQuery();
-					return true;
-				}
-			};
-		}
+		string ISearchable.SearchableString => Title;
 	}
 }

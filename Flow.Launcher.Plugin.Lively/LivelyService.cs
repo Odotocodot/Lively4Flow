@@ -40,16 +40,16 @@ namespace Flow.Launcher.Plugin.Lively
 
 			commands = new CommandCollection
 			{
-				new Command("setwp", "Search and set wallpapers", query => wallpapers.FilterToResultsList(this, query)),
-				new Command("random", "Set a random Wallpaper", _ => ResultFrom.RandomiseCommand(this)),
-				new Command("closewp", "Close a wallpaper", _ => ResultFrom.CloseCommand(this)),
+				new Command("setwp", "Search and set wallpapers", query => wallpapers.ToResultList(this, query)),
+				new Command("random", "Set a random Wallpaper", _ => Results.For.RandomiseCommand(this)),
+				new Command("closewp", "Close a wallpaper", _ => Results.For.CloseCommand(this)),
 				new Command("volume", "Set the volume of a wallpaper", null),
-				new Command("layout", "Change the wallpaper layout", _ => ResultFrom.WallpaperArrangements(this)),
+				new Command("layout", "Change the wallpaper layout", _ => Results.For.WallpaperArrangements(this)),
 				new Command("playback", "Pause or play wallpaper playback", null),
 				//new Command("seek", "Set wallpaper playback position", null),
 				new Command("open", "Open Lively", null),
 				new Command("quit", "Quit Lively", _ =>
-					ResultCreator.SingleResult("Quit Lively", null, livelyApi.QuitLively, true))
+					Results.SingleResult("Quit Lively", null, livelyApi.QuitLively, true))
 			};
 		}
 
@@ -71,7 +71,7 @@ namespace Flow.Launcher.Plugin.Lively
 				JsonSerializerOptions.Default,
 				token);
 
-			//Because of this line of code, the WallpaperLayout.json must be loaded before any wallpapers
+			//Because of this line of code, the WallpaperLayout.json must be loaded before any wallpapers check if they are active
 			activeWallpapers =
 				wallpaperLayout.ToLookup(layout => layout.LivelyInfoPath, layout => layout.LivelyScreen.Index);
 		}

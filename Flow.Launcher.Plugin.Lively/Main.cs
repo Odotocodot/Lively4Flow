@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -16,13 +17,14 @@ namespace Flow.Launcher.Plugin.Lively
 
 		private bool canLoadWallpapers;
 
-		public async Task InitAsync(PluginInitContext context)
+		public Task InitAsync(PluginInitContext context)
 		{
 			this.context = context;
 			context.API.VisibilityChanged += OnVisibilityChanged;
 			settings = context.API.LoadSettingJsonStorage<Settings>();
 			SettingsHelper.Setup(settings, this.context);
 			livelyService = new LivelyService(settings, context);
+			return Task.CompletedTask;
 		}
 
 		private void OnVisibilityChanged(object sender, VisibilityChangedEventArgs args)
@@ -53,7 +55,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 			if (string.IsNullOrWhiteSpace(query.Search))
 			{
-				var results = livelyService.Wallpapers.ToResultsList(livelyService);
+				var results = livelyService.Wallpapers.ToResultList(livelyService);
 				results.Insert(0, new Result
 				{
 					Title = "View Lively commands",
@@ -72,17 +74,19 @@ namespace Flow.Launcher.Plugin.Lively
 			if (query.FirstSearch.StartsWith(Command.Keyword))
 			{
 				if (query.FirstSearch.Length <= Command.Keyword.Length)
-					return livelyService.Commands.ToResultsList(livelyService);
+					return livelyService.Commands.ToResultList(livelyService); //.ToResultsList(livelyService);
 
 				var commandQuery = query.FirstSearch[1..].Trim();
 
 				if (livelyService.Commands.TryGetValue(commandQuery, out Command command))
 					return command.ResultGetter(query.SecondToEndSearch);
 
-				return livelyService.Commands.FilterToResultsList(livelyService, commandQuery);
+				return livelyService.Commands.ToResultList(livelyService, commandQuery);
 			}
 
-			return livelyService.Wallpapers.FilterToResultsList(livelyService, query.Search);
+			return livelyService.Wallpapers.Cast<ISearchable>()
+				.Concat(livelyService.Commands)
+				.ToResultList(livelyService, query.Search);
 
 			// if (canLoadWallpapers)
 			// {
