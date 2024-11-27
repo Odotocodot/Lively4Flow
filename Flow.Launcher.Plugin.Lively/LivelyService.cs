@@ -43,7 +43,7 @@ namespace Flow.Launcher.Plugin.Lively
 				new Command("setwp", "Search and set wallpapers", query => wallpapers.ToResultList(this, query)),
 				new Command("random", "Set a random Wallpaper", _ => Results.For.RandomiseCommand(this)),
 				new Command("closewp", "Close a wallpaper", _ => Results.For.CloseCommand(this)),
-				new Command("volume", "Set the volume of a wallpaper", null),
+				new Command("volume", "Set the volume of a wallpaper", query => Results.For.VolumeCommand(this, query)),
 				new Command("layout", "Change the wallpaper layout", _ => Results.For.WallpaperArrangements(this)),
 				new Command("playback", "Pause or play wallpaper playback", null),
 				//new Command("seek", "Set wallpaper playback position", null),
@@ -76,11 +76,8 @@ namespace Flow.Launcher.Plugin.Lively
 				wallpaperLayout.ToLookup(layout => layout.LivelyInfoPath, layout => layout.LivelyScreen.Index);
 		}
 
-		public bool IsActiveWallpaper(Wallpaper wallpaper, out IEnumerable<int> livelyMonitorIndexes)
-		{
-			livelyMonitorIndexes = activeWallpapers[wallpaper.FolderPath];
-			return livelyMonitorIndexes.Any();
-		}
+		public bool IsActiveWallpaper(Wallpaper wallpaper, out IEnumerable<int> livelyMonitorIndexes) =>
+			(livelyMonitorIndexes = activeWallpapers[wallpaper.FolderPath]).Any();
 
 		public bool GetActiveMonitorIndexes(out IEnumerable<int> activeIndexes)
 		{

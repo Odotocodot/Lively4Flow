@@ -67,6 +67,63 @@ namespace Flow.Launcher.Plugin.Lively
 				return results;
 			}
 
+			public static List<Result> VolumeCommand(LivelyService livelyService, string query)
+			{
+				int? volume = null;
+				string titleSuffix = null;
+				if (int.TryParse(query, out var vol))
+				{
+					volume = Math.Clamp(vol, 0, 100);
+					titleSuffix = $" to {volume}";
+				}
+
+				return new List<Result>
+				{
+					new()
+					{
+						Title = $"Set wallpaper volume{titleSuffix}",
+						SubTitle = "Type a value between 0 and 100 to specify",
+						Score = 3000,
+						Action = _ =>
+						{
+							if (volume.HasValue)
+								livelyService.Api.SetVolume(volume.Value);
+							return volume.HasValue;
+						}
+					},
+					new()
+					{
+						Title = "Set wallpaper volume to 0 (Mute)",
+						Score = 2000,
+						Action = _ =>
+						{
+							livelyService.Api.SetVolume(0);
+							return true;
+						}
+					},
+					new()
+					{
+						Title = "Set wallpaper volume to 50",
+						Score = 1000,
+						Action = _ =>
+						{
+							livelyService.Api.SetVolume(50);
+							return true;
+						}
+					},
+					new()
+					{
+						Title = "Set wallpaper volume to 100 (Max)",
+						Score = 0,
+						Action = _ =>
+						{
+							livelyService.Api.SetVolume(100);
+							return true;
+						}
+					}
+				};
+			}
+
 			public static List<Result> WallpaperArrangements(LivelyService livelyService) =>
 				Enum.GetValues<WallpaperArrangement>()
 					.Select(arrangement =>
