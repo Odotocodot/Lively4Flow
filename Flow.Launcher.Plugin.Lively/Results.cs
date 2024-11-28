@@ -176,7 +176,7 @@ namespace Flow.Launcher.Plugin.Lively
 			public static Result Command(Command command, LivelyService livelyService, List<int> highlightData = null)
 			{
 				var autoCompleteText =
-					$"{livelyService.Context.CurrentPluginMetadata.ActionKeyword} {Models.Command.Keyword}{command.Shortcut} ";
+					$"{livelyService.Context.CurrentPluginMetadata.ActionKeyword} {Constants.CommandKeyword}{command.Shortcut} ";
 				return new Result
 				{
 					Title = command.Shortcut,

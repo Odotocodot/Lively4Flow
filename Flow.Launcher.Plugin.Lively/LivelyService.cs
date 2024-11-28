@@ -34,8 +34,8 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			this.settings = settings;
 			this.context = context;
-			localWallpapersPath = Path.Combine(this.settings.LivelyLibraryFolderPath, "wallpapers");
-			webWallpapersPath = Path.Combine(this.settings.LivelyLibraryFolderPath, "SaveData", "wptmp");
+			localWallpapersPath = Path.Combine(this.settings.LivelyLibraryFolderPath, Constants.Folders.LocalWallpapers);
+			webWallpapersPath = Path.Combine(this.settings.LivelyLibraryFolderPath, Constants.Folders.WebWallpapers);
 			livelyApi = new LivelyCommandApi(this.settings, this);
 
 			commands = new CommandCollection
@@ -63,7 +63,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 		public async Task LoadCurrentWallpaper(CancellationToken token)
 		{
-			var path = Path.Combine(Path.GetDirectoryName(settings.LivelySettingsJsonPath), "WallpaperLayout.json");
+			var path = Path.Combine(Path.GetDirectoryName(settings.LivelySettingsJsonPath), Constants.Files.WallpaperLayout);
 			await using var file = new FileStream(path, FileMode.Open, FileAccess.Read);
 
 			var wallpaperLayout = await JsonSerializer.DeserializeAsync<WallpaperLayout[]>(file,
@@ -94,7 +94,7 @@ namespace Flow.Launcher.Plugin.Lively
 				.Select(async wallpaperFolder =>
 				{
 					//context.API.LogInfo(nameof(LivelyService), "Creating Model:" + wallpaperFolder);
-					var path = Path.Combine(wallpaperFolder, "LivelyInfo.json");
+					var path = Path.Combine(wallpaperFolder, Constants.Files.LivelyInfo);
 					await using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 					var wallpaper =
 						await JsonSerializer.DeserializeAsync<Wallpaper>(file, JsonSerializerOptions.Default, token);

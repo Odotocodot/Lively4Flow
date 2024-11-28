@@ -59,21 +59,21 @@ namespace Flow.Launcher.Plugin.Lively
 				results.Insert(0, new Result
 				{
 					Title = "View Lively commands",
-					SubTitle = $"Type '{Command.Keyword}' or select this result to view commands",
+					SubTitle = $"Type '{Constants.CommandKeyword}' or select this result to view commands",
 					Score = 100000,
-					AutoCompleteText = $"{context.CurrentPluginMetadata.ActionKeyword} {Command.Keyword}",
+					AutoCompleteText = $"{context.CurrentPluginMetadata.ActionKeyword} {Constants.CommandKeyword}",
 					Action = _ =>
 					{
-						context.API.ChangeQuery($"{context.CurrentPluginMetadata.ActionKeyword} {Command.Keyword}");
+						context.API.ChangeQuery($"{context.CurrentPluginMetadata.ActionKeyword} {Constants.CommandKeyword}");
 						return false;
 					}
 				});
 				return results;
 			}
 
-			if (query.FirstSearch.StartsWith(Command.Keyword))
+			if (query.FirstSearch.StartsWith(Constants.CommandKeyword))
 			{
-				if (query.FirstSearch.Length <= Command.Keyword.Length)
+				if (query.FirstSearch.Length <= Constants.CommandKeyword.Length)
 					return livelyService.Commands.ToResultList(livelyService); //.ToResultsList(livelyService);
 
 				var commandQuery = query.FirstSearch[1..].Trim();
@@ -109,16 +109,16 @@ namespace Flow.Launcher.Plugin.Lively
 			//return results;
 		}
 
-		private void AddToResults(List<Result> results, Result result, Query query, CancellationToken token)
-		{
-			results.Add(result);
-			ResultsUpdated?.Invoke(this, new ResultUpdatedEventArgs
-			{
-				Query = query,
-				Results = results,
-				Token = token
-			});
-		}
+		// private void AddToResults(List<Result> results, Result result, Query query, CancellationToken token)
+		// {
+		// 	results.Add(result);
+		// 	ResultsUpdated?.Invoke(this, new ResultUpdatedEventArgs
+		// 	{
+		// 		Query = query,
+		// 		Results = results,
+		// 		Token = token
+		// 	});
+		// }
 
 		public void Dispose() => context.API.VisibilityChanged -= OnVisibilityChanged;
 
