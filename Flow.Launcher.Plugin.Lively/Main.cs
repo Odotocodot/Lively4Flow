@@ -8,7 +8,7 @@ using Flow.Launcher.Plugin.Lively.Models;
 
 namespace Flow.Launcher.Plugin.Lively
 {
-	public class Main : IAsyncPlugin, ISettingProvider, IDisposable, IResultUpdated
+	public class Main : IAsyncPlugin, ISettingProvider, IDisposable, IResultUpdated, IContextMenu
 	{
 		private PluginInitContext context;
 		private LivelyService livelyService;
@@ -64,7 +64,8 @@ namespace Flow.Launcher.Plugin.Lively
 					AutoCompleteText = $"{context.CurrentPluginMetadata.ActionKeyword} {Constants.CommandKeyword}",
 					Action = _ =>
 					{
-						context.API.ChangeQuery($"{context.CurrentPluginMetadata.ActionKeyword} {Constants.CommandKeyword}");
+						context.API.ChangeQuery(
+							$"{context.CurrentPluginMetadata.ActionKeyword} {Constants.CommandKeyword}");
 						return false;
 					}
 				});
@@ -124,6 +125,9 @@ namespace Flow.Launcher.Plugin.Lively
 
 		public Control CreateSettingPanel() => throw new NotImplementedException();
 		public event ResultUpdatedEventHandler ResultsUpdated;
+
+		public List<Result> LoadContextMenus(Result selectedResult) =>
+			Results.ContextMenu(selectedResult, livelyService);
 	}
 
 	public class IconProvider { }

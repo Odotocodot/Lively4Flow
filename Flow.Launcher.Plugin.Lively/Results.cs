@@ -35,20 +35,20 @@ namespace Flow.Launcher.Plugin.Lively
 
 			public static List<Result> CloseCommand(LivelyService livelyService)
 			{
-				if (!livelyService.GetActiveMonitorIndexes(out var activeIndexes))
+				if (!livelyService.GetActiveMonitorIndexes(out var indexes))
 					return SingleResult("No active Lively wallpapers", null, null, false);
 
-				var indexes = activeIndexes.ToList();
+				var activeIndexes = indexes.ToList();
 				var results = new List<Result>();
 
 				const string prefix = "Close active wallpaper";
 
 				if (livelyService.MonitorCount == 1
 				    || livelyService.WallpaperArrangement != WallpaperArrangement.Per
-				    || indexes.Count > 1)
+				    || activeIndexes.Count > 1)
 					results.Add(new Result
 					{
-						Title = $"{prefix}{AppendAllMonitors(indexes.Count <= 1)}",
+						Title = $"{prefix}{AppendAllMonitors(activeIndexes.Count <= 1)}",
 						//TODO SubTitle = "" //The name of the wallpaper
 						Action = _ =>
 						{
@@ -60,8 +60,8 @@ namespace Flow.Launcher.Plugin.Lively
 				if (livelyService.WallpaperArrangement != WallpaperArrangement.Per)
 					return results;
 
-				for (var i = 0; i < indexes.Count; i++)
-					results.Add(GetMonitorIndexResult(prefix, indexes[i],
+				for (var i = 0; i < activeIndexes.Count; i++)
+					results.Add(GetMonitorIndexResult(prefix, activeIndexes[i],
 						index => livelyService.Api.CloseWallpaper(index)));
 
 				return results;
@@ -219,6 +219,8 @@ namespace Flow.Launcher.Plugin.Lively
 		}
 
 		private const string SelectedEmoji = "\u2605"; //or ⭐\u2b50
+		
+		//Invert boolean maybe
 		private static string AppendAllMonitors(bool singleMonitor) => singleMonitor ? "" : " on all monitors";
 
 		private static string OffsetTitle(string title, string offset, List<int> highlightData)
@@ -289,5 +291,59 @@ namespace Flow.Launcher.Plugin.Lively
 				}
 			}
 		};
+
+		public static List<Result> ContextMenu(Result selectedResult, LivelyService livelyService)
+		{
+			if (selectedResult.ContextData is Wallpaper wallpaper)
+			{
+				//The readability here is pretty bad
+				var results = new List<Result>();
+				//Setting Wallpapers
+				const string setPrefix = "Set as wallpaper";
+
+				var singleMonitor = livelyService.MonitorCount == 1 ||
+				                    livelyService.WallpaperArrangement != WallpaperArrangement.Per;
+				results.Add(new Result
+				{
+					Title = $"{setPrefix}{AppendAllMonitors(singleMonitor)}",
+					Action = _ =>
+					{
+						livelyService.Api.SetWallpaper(wallpaper);
+						return true;
+					}
+				});
+
+				if (livelyService.WallpaperArrangement == WallpaperArrangement.Per)
+					livelyService.IterateMonitors(index =>
+						results.Add(GetMonitorIndexResult(setPrefix, index,
+							i => livelyService.Api.SetWallpaper(wallpaper, i))));
+
+				//Closing wallpapers
+				const string closePrefix = "Close wallpaper";
+				if (!livelyService.IsActiveWallpaper(wallpaper, out var indexes))
+					return results;
+				
+				var activeIndexes = indexes.ToList();
+				if (singleMonitor || activeIndexes.Count > 1)
+					results.Add(new Result
+					{
+						Title = $"{closePrefix}{AppendAllMonitors(activeIndexes.Count <= 1)}",
+						Action = _ =>
+						{
+							livelyService.Api.CloseWallpaper();
+							return true;
+						}
+					});
+
+				if (livelyService.WallpaperArrangement == WallpaperArrangement.Per)
+					for (var i = 0; i < activeIndexes.Count; i++)
+						results.Add(GetMonitorIndexResult(closePrefix, activeIndexes[i],
+							index => livelyService.Api.CloseWallpaper(index)));
+				
+
+				return results;
+			}
+			return null;
+		}
 	}
 }
