@@ -8,14 +8,13 @@ using Flow.Launcher.Plugin.Lively.Models;
 
 namespace Flow.Launcher.Plugin.Lively
 {
-	public class Main : IAsyncPlugin, ISettingProvider, IDisposable, IResultUpdated, IContextMenu
+	public class Main : IAsyncPlugin, ISettingProvider, IDisposable, IContextMenu
 	{
 		private PluginInitContext context;
 		private LivelyService livelyService;
 		private IconProvider iconProvider;
 		private Settings settings;
 
-		private bool canLoadWallpapers;
 
 		public Task InitAsync(PluginInitContext context)
 		{
@@ -34,52 +33,34 @@ namespace Flow.Launcher.Plugin.Lively
 
 			if (args.IsVisible)
 			{
-				canLoadWallpapers = true;
+				livelyService.EnableLoading();
 			}
 			else
 			{
-				canLoadWallpapers = false;
-				livelyService.ClearLoadedWallpapers();
+				livelyService.DisableLoading();
+				context.API.ReQuery();
 			}
 		}
 
 		public async Task<List<Result>> QueryAsync(Query query, CancellationToken token)
 		{
-			if (canLoadWallpapers)
-			{
-				canLoadWallpapers = false;
-				await Task.WhenAll(livelyService.LoadLivelySettings(token),
-					livelyService.LoadCurrentWallpaper(token));
-				await livelyService.LoadWallpapers(token);
-			}
+			await livelyService.Load(token);
 
 			if (string.IsNullOrWhiteSpace(query.Search))
 			{
 				var results = livelyService.Wallpapers.ToResultList(livelyService);
-				results.Insert(0, new Result
-				{
-					Title = "View Lively commands",
-					SubTitle = $"Type '{Constants.CommandKeyword}' or select this result to view commands",
-					Score = 100000,
-					AutoCompleteText = $"{context.CurrentPluginMetadata.ActionKeyword} {Constants.CommandKeyword}",
-					Action = _ =>
-					{
-						context.API.ChangeQuery(
-							$"{context.CurrentPluginMetadata.ActionKeyword} {Constants.CommandKeyword}");
-						return false;
-					}
-				});
+				results.Insert(0, Results.ViewCommandResult(context));
 				return results;
 			}
 
 			if (query.FirstSearch.StartsWith(Constants.CommandKeyword))
 			{
 				if (query.FirstSearch.Length <= Constants.CommandKeyword.Length)
-					return livelyService.Commands.ToResultList(livelyService); //.ToResultsList(livelyService);
+					return livelyService.Commands.ToResultList(livelyService);
 
 				var commandQuery = query.FirstSearch[1..].Trim();
 
-				if (livelyService.Commands.TryGetValue(commandQuery, out Command command))
+				if (livelyService.TryGetCommand(commandQuery, out Command command))
 					return command.ResultGetter(query.SecondToEndSearch);
 
 				return livelyService.Commands.ToResultList(livelyService, commandQuery);
@@ -88,46 +69,14 @@ namespace Flow.Launcher.Plugin.Lively
 			return livelyService.Wallpapers.Cast<ISearchable>()
 				.Concat(livelyService.Commands)
 				.ToResultList(livelyService, query.Search);
-
-			// if (canLoadWallpapers)
-			// {
-			// 	canLoadWallpapers = false;
-			//
-			// 	var tasks = livelyService.GetWallpapers(token);
-			// 	await foreach (var task in tasks.ToAsyncEnumerable().WithCancellation(token))
-			// 	{
-			// 		Wallpaper wallpaper = await task;
-			// 		Result result = resultCreator.FromWallpaper(wallpaper);
-			// 		results.Add(result);
-			// 		ResultsUpdated?.Invoke(this, new ResultUpdatedEventArgs
-			// 		{
-			// 			Query = query,
-			// 			Results = results,
-			// 			Token = token
-			// 		});
-			// 	}
-			// }
-			//return results;
 		}
 
-		// private void AddToResults(List<Result> results, Result result, Query query, CancellationToken token)
-		// {
-		// 	results.Add(result);
-		// 	ResultsUpdated?.Invoke(this, new ResultUpdatedEventArgs
-		// 	{
-		// 		Query = query,
-		// 		Results = results,
-		// 		Token = token
-		// 	});
-		// }
 
 		public void Dispose() => context.API.VisibilityChanged -= OnVisibilityChanged;
 
 		public Control CreateSettingPanel() => throw new NotImplementedException();
-		public event ResultUpdatedEventHandler ResultsUpdated;
 
-		public List<Result> LoadContextMenus(Result selectedResult) =>
-			Results.ContextMenu(selectedResult, livelyService);
+		public List<Result> LoadContextMenus(Result result) => Results.ContextMenu(result, livelyService);
 	}
 
 	public class IconProvider { }

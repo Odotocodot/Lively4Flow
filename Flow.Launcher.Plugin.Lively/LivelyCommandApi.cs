@@ -17,16 +17,10 @@ namespace Flow.Launcher.Plugin.Lively
 
 		public void SetWallpaper(Wallpaper wallpaper)
 		{
-			switch (livelyService.WallpaperArrangement)
-			{
-				case WallpaperArrangement.Per:
-					livelyService.IterateMonitors(index => SetWallpaper(wallpaper, index));
-					break;
-				case WallpaperArrangement.Span:
-				case WallpaperArrangement.Duplicate:
-					InternalSetWallpaper(wallpaper.FolderPath, null);
-					break;
-			}
+			if (livelyService.WallpaperArrangement == WallpaperArrangement.Per)
+				livelyService.IterateMonitors(index => SetWallpaper(wallpaper, index));
+			else
+				InternalSetWallpaper(wallpaper.FolderPath, null);
 		}
 
 		public void SetWallpaper(Wallpaper wallpaper, int monitorIndex) =>

@@ -24,7 +24,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 		public static void Setup(Settings settings, PluginInitContext context)
 		{
-			if (settings.RunSetup) //TODO if InstallType == None also run
+			if (settings.RunSetup) //TODO: if InstallType == None also run
 				return;
 			Log(context, "Starting Setup");
 
@@ -48,7 +48,7 @@ namespace Flow.Launcher.Plugin.Lively
 				default:
 				case InstallType.None:
 					Log(context, "No exe was NOT found, exiting quick setup.");
-					//TODO tell the user
+					//TODO: tell the user
 					return;
 			}
 
