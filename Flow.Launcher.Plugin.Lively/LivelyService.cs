@@ -37,7 +37,7 @@ namespace Flow.Launcher.Plugin.Lively
 			Context = context;
 			localWallpapersPath = Path.Combine(settings.LivelyLibraryFolderPath, Constants.Folders.LocalWallpapers);
 			webWallpapersPath = Path.Combine(settings.LivelyLibraryFolderPath, Constants.Folders.WebWallpapers);
-			Api = new LivelyCommandApi(settings, this);
+			Api = new LivelyCommandApi(this);
 
 			commands = new CommandCollection
 			{

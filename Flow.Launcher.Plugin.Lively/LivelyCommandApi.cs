@@ -1,17 +1,17 @@
 using System;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using Flow.Launcher.Plugin.Lively.Models;
 
 namespace Flow.Launcher.Plugin.Lively
 {
 	public class LivelyCommandApi
 	{
-		private readonly Settings settings;
 		private readonly LivelyService livelyService;
 
-		public LivelyCommandApi(Settings settings, LivelyService livelyService)
+		public LivelyCommandApi(LivelyService livelyService)
 		{
-			this.settings = settings;
 			this.livelyService = livelyService;
 		}
 
@@ -38,7 +38,6 @@ namespace Flow.Launcher.Plugin.Lively
 		public void CloseWallpaper(int monitorIndex) => InternalCloseWallpaper(monitorIndex);
 		public void CloseWallpaper() => InternalCloseWallpaper(-1);
 
-
 		public void OpenLively() => RunCommand("--showApp true");
 		public void QuitLively() => RunCommand("--shutdown true");
 
@@ -52,11 +51,22 @@ namespace Flow.Launcher.Plugin.Lively
 
 		private void InternalCloseWallpaper(int monitorIndex) => RunCommand($"closewp --monitor {monitorIndex}");
 
+		public async Task<bool> IsLivelyRunning(CancellationToken token)
+		{
+			Process process = Process.Start(new ProcessStartInfo
+			{
+				FileName = Constants.CommandUtility,
+				CreateNoWindow = true,
+				RedirectStandardOutput = true
+			});
+			return (await process!.StandardOutput.ReadToEndAsync(token)).Length <= 10;
+		}
+
 		private void RunCommand(string args)
 		{
 			Process.Start(new ProcessStartInfo
 			{
-				FileName = settings.LivelyExePath,
+				FileName = Constants.CommandUtility,
 				Arguments = args,
 				CreateNoWindow = true
 			});
