@@ -17,13 +17,14 @@ namespace Flow.Launcher.Plugin.Lively
 		private readonly string localWallpapersPath;
 		private readonly string webWallpapersPath;
 		private readonly CommandCollection commands;
-		private readonly List<Wallpaper> wallpapers = new();
+		private readonly Dictionary<Wallpaper, List<int>> wallpapers = new();
+		private readonly Dictionary<int, Wallpaper> activeMonitorIndexes = new();
 
 		private bool canLoadData;
-		private ILookup<string, int> activeWallpapers;
 
 		public IReadOnlyList<Command> Commands => commands;
-		public IReadOnlyList<Wallpaper> Wallpapers => wallpapers;
+		public IEnumerable<Wallpaper> Wallpapers => wallpapers.Keys;
+		public IReadOnlyDictionary<int, Wallpaper> ActiveMonitorIndexes => activeMonitorIndexes;
 		public PluginInitContext Context { get; }
 		public LivelyCommandApi Api { get; }
 		public WallpaperArrangement WallpaperArrangement { get; private set; }
@@ -33,14 +34,13 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			this.settings = settings;
 			Context = context;
-			localWallpapersPath =
-				Path.Combine(this.settings.LivelyLibraryFolderPath, Constants.Folders.LocalWallpapers);
-			webWallpapersPath = Path.Combine(this.settings.LivelyLibraryFolderPath, Constants.Folders.WebWallpapers);
-			Api = new LivelyCommandApi(this.settings, this);
+			localWallpapersPath = Path.Combine(settings.LivelyLibraryFolderPath, Constants.Folders.LocalWallpapers);
+			webWallpapersPath = Path.Combine(settings.LivelyLibraryFolderPath, Constants.Folders.WebWallpapers);
+			Api = new LivelyCommandApi(settings, this);
 
 			commands = new CommandCollection
 			{
-				new Command("setwp", "Search and set wallpapers", query => wallpapers.ToResultList(this, query)),
+				new Command("setwp", "Search and set wallpapers", query => Wallpapers.ToResultList(this, query)),
 				new Command("random", "Set a random Wallpaper", _ => Results.For.RandomiseCommand(this)),
 				new Command("closewp", "Close a wallpaper", _ => Results.For.CloseCommand(this)),
 				new Command("volume", "Set the volume of a wallpaper", query => Results.For.VolumeCommand(this, query)),
@@ -56,12 +56,38 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			if (!canLoadData)
 				return;
-			
+
 			canLoadData = false;
-			await Task.WhenAll(LoadLivelySettings(token), LoadCurrentWallpaper(token), LoadWallpapers(token));
+
+			var currentWallpaperTask = LoadCurrentWallpaper(token);
+			ValueTask settingsTask = LoadLivelySettings(token);
+
+			var currentWallpapers = await currentWallpaperTask;
+			
+			await foreach (var wallpaperTask in LoadWallpapers(token).ToAsyncEnumerable().WithCancellation(token))
+			{
+				Wallpaper wallpaper = await wallpaperTask;
+				List<int> activeIndexes = null;
+				for (var i = 0; i < currentWallpapers.Length; i++)
+				{
+					var ((_, monitorIndex), folderPath) = currentWallpapers[i];
+					if (wallpaper.FolderPath != folderPath)
+						continue;
+					activeIndexes ??= new List<int>();
+					activeIndexes.Add(monitorIndex);
+					activeMonitorIndexes.Add(monitorIndex, wallpaper);
+				}
+
+				activeIndexes?.Sort();
+
+				wallpapers.Add(wallpaper, activeIndexes);
+				//Context.API.LogInfo(nameof(LivelyService), "ADDED WALLPAPER TO DICT");
+			}
+
+			await settingsTask;
 		}
 
-		private async Task LoadLivelySettings(CancellationToken token)
+		private async ValueTask LoadLivelySettings(CancellationToken token)
 		{
 			await using var file = new FileStream(settings.LivelySettingsJsonPath, FileMode.Open, FileAccess.Read);
 			var livelySettings =
@@ -69,7 +95,7 @@ namespace Flow.Launcher.Plugin.Lively
 			WallpaperArrangement = livelySettings.WallpaperArrangement;
 		}
 
-		private async Task LoadCurrentWallpaper(CancellationToken token)
+		private async Task<WallpaperLayout[]> LoadCurrentWallpaper(CancellationToken token)
 		{
 			var path = Path.Combine(Path.GetDirectoryName(settings.LivelySettingsJsonPath),
 				Constants.Files.WallpaperLayout);
@@ -79,40 +105,31 @@ namespace Flow.Launcher.Plugin.Lively
 				JsonSerializerOptions.Default,
 				token);
 
-			//Because of this line of code, the WallpaperLayout.json must be loaded before any wallpapers check if they are active
-			activeWallpapers =
-				wallpaperLayout.ToLookup(layout => layout.LivelyInfoPath, layout => layout.LivelyScreen.Index);
+			return wallpaperLayout;
 		}
 
-		private async Task LoadWallpapers(CancellationToken token)
+		private IEnumerable<Task<Wallpaper>> LoadWallpapers(CancellationToken token)
 		{
-			var wallpaperTasks = Directory.EnumerateDirectories(localWallpapersPath)
+			return Directory.EnumerateDirectories(localWallpapersPath)
 				.Concat(Directory.EnumerateDirectories(webWallpapersPath))
 				.AsParallel()
 				.WithCancellation(token)
 				.WithDegreeOfParallelism(8)
 				.Select(async wallpaperFolder =>
 				{
-					//context.API.LogInfo(nameof(LivelyService), "Creating Model:" + wallpaperFolder);
+					//Context.API.LogInfo(nameof(LivelyService), "Creating Model:" + wallpaperFolder);
 					var path = Path.Combine(wallpaperFolder, Constants.Files.LivelyInfo);
 					await using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 					var wallpaper =
 						await JsonSerializer.DeserializeAsync<Wallpaper>(file, JsonSerializerOptions.Default, token);
 					wallpaper.Init(wallpaperFolder);
-					//context.API.LogInfo(nameof(LivelyService), "Finished Model:" + wallpaperFolder);
+					//Context.API.LogInfo(nameof(LivelyService), "Finished Model:" + wallpaperFolder);
 					return wallpaper;
-				})
-				.ToAsyncEnumerable();
-
-			await foreach (var task in wallpaperTasks)
-				wallpapers.Add(await task);
+				});
 		}
 
-		public bool IsActiveWallpaper(Wallpaper wallpaper, out IEnumerable<int> livelyMonitorIndexes) =>
-			(livelyMonitorIndexes = activeWallpapers[wallpaper.FolderPath]).Any();
-
-		public bool GetActiveMonitorIndexes(out IEnumerable<int> activeIndexes) =>
-			(activeIndexes = activeWallpapers.SelectMany(group => group).Order()).Any();
+		public bool IsActiveWallpaper(Wallpaper wallpaper, out IReadOnlyList<int> livelyMonitorIndexes) =>
+			(livelyMonitorIndexes = wallpapers[wallpaper]) != null;
 
 		public bool TryGetCommand(string query, out Command command) => commands.TryGetValue(query, out command);
 
@@ -132,6 +149,7 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			canLoadData = false;
 			wallpapers.Clear();
+			activeMonitorIndexes.Clear();
 		}
 
 		private class CommandCollection : KeyedCollection<string, Command>

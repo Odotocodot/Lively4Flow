@@ -35,21 +35,22 @@ namespace Flow.Launcher.Plugin.Lively
 
 			public static List<Result> CloseCommand(LivelyService livelyService)
 			{
-				if (!livelyService.GetActiveMonitorIndexes(out var indexes))
+				var activeMonitors = livelyService.ActiveMonitorIndexes;
+				if (!activeMonitors.Any())
 					return SingleResult("No active Lively wallpapers", null, null, false);
 
-				var activeIndexes = indexes.ToList();
 				var results = new List<Result>();
-
 				const string prefix = "Close active wallpaper";
 
 				if (livelyService.MonitorCount == 1
 				    || livelyService.WallpaperArrangement != WallpaperArrangement.Per
-				    || activeIndexes.Count > 1)
+				    || activeMonitors.Count > 1)
 					results.Add(new Result
 					{
-						Title = $"{prefix}{AppendAllMonitors(activeIndexes.Count <= 1)}",
-						//TODO: SubTitle = "" //The name of the wallpaper
+						Title = $"{prefix}{AppendAllMonitors(activeMonitors.Count <= 1)}",
+						SubTitle = activeMonitors.Count <= 1
+							? $"Current Wallpaper: {activeMonitors.First().Value.Title}"
+							: null,
 						Action = _ =>
 						{
 							livelyService.Api.CloseWallpaper();
@@ -60,9 +61,12 @@ namespace Flow.Launcher.Plugin.Lively
 				if (livelyService.WallpaperArrangement != WallpaperArrangement.Per)
 					return results;
 
-				for (var i = 0; i < activeIndexes.Count; i++)
-					results.Add(GetMonitorIndexResult(prefix, activeIndexes[i],
-						index => livelyService.Api.CloseWallpaper(index)));
+				results.AddRange(activeMonitors.Select(activeMonitor =>
+					GetMonitorIndexResult(prefix,
+						activeMonitor.Key,
+						index => livelyService.Api.CloseWallpaper(index),
+						$"Current Wallpaper: {activeMonitor.Value.Title}")));
+
 
 				return results;
 			}
@@ -200,7 +204,7 @@ namespace Flow.Launcher.Plugin.Lively
 				if (livelyService.IsActiveWallpaper(wallpaper, out var monitorIndexes))
 				{
 					var offset = livelyService.WallpaperArrangement == WallpaperArrangement.Per
-						? $"{SelectedEmoji} {string.Join(", ", monitorIndexes.Order())} | "
+						? $"{SelectedEmoji} {string.Join(", ", monitorIndexes)} | "
 						: $"{SelectedEmoji} | ";
 					title = OffsetTitle(title, offset, highlightData);
 					score = 2000;
@@ -340,10 +344,9 @@ namespace Flow.Launcher.Plugin.Lively
 
 			//Closing wallpapers
 			const string closePrefix = "Close wallpaper";
-			if (!livelyService.IsActiveWallpaper(wallpaper, out var indexes))
+			if (!livelyService.IsActiveWallpaper(wallpaper, out var activeIndexes))
 				return results;
 
-			var activeIndexes = indexes.ToList();
 			if (singleMonitor || activeIndexes.Count > 1)
 				results.Add(new Result
 				{
