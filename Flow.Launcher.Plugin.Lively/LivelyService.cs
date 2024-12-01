@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -17,8 +18,8 @@ namespace Flow.Launcher.Plugin.Lively
 		private readonly string localWallpapersPath;
 		private readonly string webWallpapersPath;
 		private readonly CommandCollection commands;
-		private readonly Dictionary<Wallpaper, List<int>> wallpapers = new();
-		private readonly Dictionary<int, Wallpaper> activeMonitorIndexes = new();
+		private readonly ConcurrentDictionary<Wallpaper, List<int>> wallpapers = new();
+		private readonly ConcurrentDictionary<int, Wallpaper> activeMonitorIndexes = new();
 
 		private bool canLoadData;
 
@@ -54,7 +55,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 		public async ValueTask Load(CancellationToken token)
 		{
-			if (!canLoadData)
+			if (!canLoadData || token.IsCancellationRequested)
 				return;
 
 			canLoadData = false;
@@ -62,29 +63,39 @@ namespace Flow.Launcher.Plugin.Lively
 			var currentWallpaperTask = LoadCurrentWallpaper(token);
 			ValueTask settingsTask = LoadLivelySettings(token);
 
-			var currentWallpapers = await currentWallpaperTask;
-			
-			await foreach (var wallpaperTask in LoadWallpapers(token).ToAsyncEnumerable().WithCancellation(token))
+			var parallelOptions = new ParallelOptions
 			{
-				Wallpaper wallpaper = await wallpaperTask;
-				List<int> activeIndexes = null;
-				for (var i = 0; i < currentWallpapers.Length; i++)
-				{
-					var ((_, monitorIndex), folderPath) = currentWallpapers[i];
-					if (wallpaper.FolderPath != folderPath)
-						continue;
-					activeIndexes ??= new List<int>();
-					activeIndexes.Add(monitorIndex);
-					activeMonitorIndexes.Add(monitorIndex, wallpaper);
-				}
+				MaxDegreeOfParallelism = 8,
+				CancellationToken = token
+			};
+			await settingsTask;
+			await Parallel.ForEachAsync(
+				LoadWallpaperFolders(parallelOptions.MaxDegreeOfParallelism, token),
+				parallelOptions,
+				async (wallpaperFolder, ct) => await LoadData(wallpaperFolder, await currentWallpaperTask, ct));
+		}
 
-				activeIndexes?.Sort();
+		private async ValueTask LoadData(string wallpaperFolder, WallpaperLayout[] currentWallpapers,
+			CancellationToken ct)
+		{
+			if (ct.IsCancellationRequested)
+				return;
 
-				wallpapers.Add(wallpaper, activeIndexes);
-				//Context.API.LogInfo(nameof(LivelyService), "ADDED WALLPAPER TO DICT");
+			Wallpaper wallpaper = await LoadWallpaper(wallpaperFolder, ct);
+			List<int> activeIndexes = null;
+			for (var i = 0; i < currentWallpapers.Length; i++)
+			{
+				var ((_, monitorIndex), folderPath) = currentWallpapers[i];
+				if (wallpaper.FolderPath != folderPath)
+					continue;
+				activeIndexes ??= new List<int>();
+				activeIndexes.Add(monitorIndex);
+				activeMonitorIndexes.TryAdd(monitorIndex, wallpaper);
 			}
 
-			await settingsTask;
+			activeIndexes?.Sort();
+			wallpapers.TryAdd(wallpaper, activeIndexes);
+			//Context.API.LogInfo(nameof(LivelyService), "ADDED WALLPAPER TO DICT - " + wallpaperFolder);
 		}
 
 		private async ValueTask LoadLivelySettings(CancellationToken token)
@@ -95,7 +106,7 @@ namespace Flow.Launcher.Plugin.Lively
 			WallpaperArrangement = livelySettings.WallpaperArrangement;
 		}
 
-		private async Task<WallpaperLayout[]> LoadCurrentWallpaper(CancellationToken token)
+		private async ValueTask<WallpaperLayout[]> LoadCurrentWallpaper(CancellationToken token)
 		{
 			var path = Path.Combine(Path.GetDirectoryName(settings.LivelySettingsJsonPath),
 				Constants.Files.WallpaperLayout);
@@ -108,28 +119,27 @@ namespace Flow.Launcher.Plugin.Lively
 			return wallpaperLayout;
 		}
 
-		private IEnumerable<Task<Wallpaper>> LoadWallpapers(CancellationToken token)
-		{
-			return Directory.EnumerateDirectories(localWallpapersPath)
+		private ParallelQuery<string> LoadWallpaperFolders(int degreeOfParallelism, CancellationToken token) =>
+			Directory.EnumerateDirectories(localWallpapersPath)
 				.Concat(Directory.EnumerateDirectories(webWallpapersPath))
 				.AsParallel()
 				.WithCancellation(token)
-				.WithDegreeOfParallelism(8)
-				.Select(async wallpaperFolder =>
-				{
-					//Context.API.LogInfo(nameof(LivelyService), "Creating Model:" + wallpaperFolder);
-					var path = Path.Combine(wallpaperFolder, Constants.Files.LivelyInfo);
-					await using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-					var wallpaper =
-						await JsonSerializer.DeserializeAsync<Wallpaper>(file, JsonSerializerOptions.Default, token);
-					wallpaper.Init(wallpaperFolder);
-					//Context.API.LogInfo(nameof(LivelyService), "Finished Model:" + wallpaperFolder);
-					return wallpaper;
-				});
+				.WithDegreeOfParallelism(degreeOfParallelism);
+
+		private async ValueTask<Wallpaper> LoadWallpaper(string wallpaperFolder, CancellationToken token)
+		{
+			//Context.API.LogInfo(nameof(LivelyService), "Creating Model:" + wallpaperFolder);
+			var path = Path.Combine(wallpaperFolder, Constants.Files.LivelyInfo);
+			await using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+			var wallpaper =
+				await JsonSerializer.DeserializeAsync<Wallpaper>(file, JsonSerializerOptions.Default, token);
+			wallpaper.Init(wallpaperFolder);
+			//Context.API.LogInfo(nameof(LivelyService), "Finished Model:" + wallpaperFolder);
+			return wallpaper;
 		}
 
-		public bool IsActiveWallpaper(Wallpaper wallpaper, out IReadOnlyList<int> livelyMonitorIndexes) =>
-			(livelyMonitorIndexes = wallpapers[wallpaper]) != null;
+		public bool IsActiveWallpaper(Wallpaper wallpaper, out List<int> livelyMonitorIndexes) =>
+			!wallpapers.TryGetValue(wallpaper, out livelyMonitorIndexes);
 
 		public bool TryGetCommand(string query, out Command command) => commands.TryGetValue(query, out command);
 
