@@ -48,7 +48,7 @@ namespace Flow.Launcher.Plugin.Lively
 				new Command("layout", "Change the wallpaper layout", _ => Results.For.WallpaperArrangements(this)),
 				new Command("playback", "Pause or play wallpaper playback", _ => Results.For.PlaybackCommand(this)),
 				//new Command("seek", "Set wallpaper playback position", null),
-				new Command("open", "Open Lively", null),
+				new Command(Constants.Commands.Open, "Open Lively", null),
 				new Command("quit", "Quit Lively", _ => Results.SingleResult("Quit Lively", null, Api.QuitLively, true))
 			};
 		}

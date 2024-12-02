@@ -180,7 +180,7 @@ namespace Flow.Launcher.Plugin.Lively
 			public static Result Command(Command command, LivelyService livelyService, List<int> highlightData = null)
 			{
 				var autoCompleteText =
-					$"{livelyService.Context.CurrentPluginMetadata.ActionKeyword} {Constants.CommandKeyword}{command.Shortcut} ";
+					$"{livelyService.Context.CurrentPluginMetadata.ActionKeyword} {Constants.Commands.Keyword}{command.Shortcut} ";
 				return new Result
 				{
 					Title = command.Shortcut,
@@ -301,19 +301,38 @@ namespace Flow.Launcher.Plugin.Lively
 			}
 		};
 
-		public static Result ViewCommandResult(PluginInitContext context) => new()
+
+		public static Result ViewCommandResult(LivelyService livelyService, bool isLivelyRunning)
 		{
-			Title = "View Lively commands",
-			SubTitle = $"Type '{Constants.CommandKeyword}' or select this result to view commands",
-			Score = 100000,
-			AutoCompleteText = $"{context.CurrentPluginMetadata.ActionKeyword} {Constants.CommandKeyword}",
-			Action = _ =>
+			var autoCompleteText =
+				$"{livelyService.Context.CurrentPluginMetadata.ActionKeyword} {Constants.Commands.Keyword}";
+			var subTitle = $"Type '{Constants.Commands.Keyword}";
+			var title = "View Lively commands";
+			if (isLivelyRunning)
 			{
-				context.API.ChangeQuery(
-					$"{context.CurrentPluginMetadata.ActionKeyword} {Constants.CommandKeyword}");
-				return false;
+				subTitle += "' or select this result to view commands";
 			}
-		};
+			else
+			{
+				title += ". [Warning] Lively is not open";
+				subTitle +=
+					$"{Constants.Commands.Open}' or select this result to view available commands"; //There is only one command ;)
+				autoCompleteText += Constants.Commands.Open;
+			}
+
+			return new Result
+			{
+				Title = title,
+				SubTitle = subTitle,
+				Score = 100000,
+				AutoCompleteText = autoCompleteText,
+				Action = _ =>
+				{
+					livelyService.Context.API.ChangeQuery(autoCompleteText);
+					return false;
+				}
+			};
+		}
 
 		public static List<Result> ContextMenu(Result selectedResult, LivelyService livelyService)
 		{

@@ -17,10 +17,14 @@ namespace Flow.Launcher.Plugin.Lively
 			public const string WebWallpapers = "SaveData\\wptmp";
 		}
 
+		public static class Commands
+		{
+			public const string Keyword = "!";
+			public const string Open = "open";
+		}
+
 		public static readonly string CommandUtility = Path.Combine(
 			Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 			"Lively Command Utility\\Livelycu.exe");
-
-		public const string CommandKeyword = "!";
 	}
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,17 +46,18 @@ namespace Flow.Launcher.Plugin.Lively
 		public async Task<List<Result>> QueryAsync(Query query, CancellationToken token)
 		{
 			await livelyService.Load(token);
+			var isLivelyRunning = IsLivelyRunning();
 
 			if (string.IsNullOrWhiteSpace(query.Search))
 			{
 				var results = livelyService.Wallpapers.ToResultList(livelyService);
-				results.Insert(0, Results.ViewCommandResult(context));
+				results.Insert(0, Results.ViewCommandResult(livelyService, isLivelyRunning));
 				return results;
 			}
 
-			if (query.FirstSearch.StartsWith(Constants.CommandKeyword))
+			if (query.FirstSearch.StartsWith(Constants.Commands.Keyword))
 			{
-				if (query.FirstSearch.Length <= Constants.CommandKeyword.Length)
+				if (query.FirstSearch.Length <= Constants.Commands.Keyword.Length)
 					return livelyService.Commands.ToResultList(livelyService);
 
 				var commandQuery = query.FirstSearch[1..].Trim();
@@ -71,6 +73,8 @@ namespace Flow.Launcher.Plugin.Lively
 				.ToResultList(livelyService, query.Search);
 		}
 
+		private bool IsLivelyRunning() => Process.GetProcessesByName("Lively")
+			.FirstOrDefault(p => p.MainModule?.FileName.StartsWith(settings.LivelyExePath) == true) != null;
 
 		public void Dispose() => context.API.VisibilityChanged -= OnVisibilityChanged;
 
