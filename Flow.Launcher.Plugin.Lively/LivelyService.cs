@@ -26,7 +26,6 @@ namespace Flow.Launcher.Plugin.Lively
 		public IReadOnlyList<Command> Commands => commands;
 		public IEnumerable<Wallpaper> Wallpapers => wallpapers.Keys;
 		public IReadOnlyDictionary<int, Wallpaper> ActiveMonitorIndexes => activeMonitorIndexes;
-		public PluginInitContext Context { get; }
 		public LivelyCommandApi Api { get; }
 		public WallpaperArrangement WallpaperArrangement { get; private set; }
 		public int MonitorCount => Screen.AllScreens.Length;
@@ -34,17 +33,16 @@ namespace Flow.Launcher.Plugin.Lively
 		public LivelyService(Settings settings, PluginInitContext context)
 		{
 			this.settings = settings;
-			Context = context;
 			localWallpapersPath = Path.Combine(settings.LivelyLibraryFolderPath, Constants.Folders.LocalWallpapers);
 			webWallpapersPath = Path.Combine(settings.LivelyLibraryFolderPath, Constants.Folders.WebWallpapers);
 			Api = new LivelyCommandApi(this);
 
 			commands = new CommandCollection
 			{
-				new Command("setwp", "Search and set wallpapers", query => Wallpapers.ToResultList(this, query)),
+				new Command("setwp", "Search and set wallpapers", q => Wallpapers.ToResultList(this, context, q)),
 				new Command("random", "Set a random Wallpaper", _ => Results.For.RandomiseCommand(this)),
 				new Command("closewp", "Close a wallpaper", _ => Results.For.CloseCommand(this)),
-				new Command("volume", "Set the volume of a wallpaper", query => Results.For.VolumeCommand(this, query)),
+				new Command("volume", "Set the volume of a wallpaper", q => Results.For.VolumeCommand(this, q)),
 				new Command("layout", "Change the wallpaper layout", _ => Results.For.WallpaperArrangements(this)),
 				new Command("playback", "Pause or play wallpaper playback", _ => Results.For.PlaybackCommand(this)),
 				//new Command("seek", "Set wallpaper playback position", null),

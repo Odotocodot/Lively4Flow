@@ -177,10 +177,10 @@ namespace Flow.Launcher.Plugin.Lively
 					})
 					.ToList();
 
-			public static Result Command(Command command, LivelyService livelyService, List<int> highlightData = null)
+			public static Result Command(Command command, PluginInitContext context, List<int> highlightData = null)
 			{
 				var autoCompleteText =
-					$"{livelyService.Context.CurrentPluginMetadata.ActionKeyword} {Constants.Commands.Keyword}{command.Shortcut} ";
+					$"{context.CurrentPluginMetadata.ActionKeyword} {Constants.Commands.Keyword}{command.Shortcut} ";
 				return new Result
 				{
 					Title = command.Shortcut,
@@ -190,7 +190,7 @@ namespace Flow.Launcher.Plugin.Lively
 					AutoCompleteText = autoCompleteText,
 					Action = _ =>
 					{
-						livelyService.Context.API.ChangeQuery(autoCompleteText);
+						context.API.ChangeQuery(autoCompleteText);
 						return false;
 					}
 				};
@@ -258,6 +258,7 @@ namespace Flow.Launcher.Plugin.Lively
 		};
 
 		public static List<Result> ToResultList<T>(this IEnumerable<T> source, LivelyService livelyService,
+			PluginInitContext context,
 			string query = null)
 			where T : ISearchable
 		{
@@ -269,7 +270,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 				if (validQuery)
 				{
-					MatchResult matchResult = livelyService.Context.API.FuzzySearch(query, element.SearchableString);
+					MatchResult matchResult = context.API.FuzzySearch(query, element.SearchableString);
 					highlightData = matchResult.MatchData;
 					if (!matchResult.Success)
 						continue;
@@ -277,7 +278,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 				Result result = element switch
 				{
-					Command command => For.Command(command, livelyService, highlightData),
+					Command command => For.Command(command, context, highlightData),
 					Wallpaper wallpaper => For.Wallpaper(wallpaper, livelyService, highlightData),
 					_ => throw new InvalidCastException()
 				};
@@ -302,10 +303,10 @@ namespace Flow.Launcher.Plugin.Lively
 		};
 
 
-		public static Result ViewCommandResult(LivelyService livelyService, bool isLivelyRunning)
+		public static Result ViewCommandResult(PluginInitContext context, bool isLivelyRunning)
 		{
 			var autoCompleteText =
-				$"{livelyService.Context.CurrentPluginMetadata.ActionKeyword} {Constants.Commands.Keyword}";
+				$"{context.CurrentPluginMetadata.ActionKeyword} {Constants.Commands.Keyword}";
 			var subTitle = $"Type '{Constants.Commands.Keyword}";
 			var title = "View Lively commands";
 			if (isLivelyRunning)
@@ -328,7 +329,7 @@ namespace Flow.Launcher.Plugin.Lively
 				AutoCompleteText = autoCompleteText,
 				Action = _ =>
 				{
-					livelyService.Context.API.ChangeQuery(autoCompleteText);
+					context.API.ChangeQuery(autoCompleteText);
 					return false;
 				}
 			};

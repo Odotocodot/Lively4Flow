@@ -50,27 +50,27 @@ namespace Flow.Launcher.Plugin.Lively
 
 			if (string.IsNullOrWhiteSpace(query.Search))
 			{
-				var results = livelyService.Wallpapers.ToResultList(livelyService);
-				results.Insert(0, Results.ViewCommandResult(livelyService, isLivelyRunning));
+				var results = livelyService.Wallpapers.ToResultList(livelyService, context);
+				results.Insert(0, Results.ViewCommandResult(context, isLivelyRunning));
 				return results;
 			}
 
 			if (query.FirstSearch.StartsWith(Constants.Commands.Keyword))
 			{
 				if (query.FirstSearch.Length <= Constants.Commands.Keyword.Length)
-					return livelyService.Commands.ToResultList(livelyService);
+					return livelyService.Commands.ToResultList(livelyService, context);
 
 				var commandQuery = query.FirstSearch[1..].Trim();
 
 				if (livelyService.TryGetCommand(commandQuery, out Command command))
 					return command.ResultGetter(query.SecondToEndSearch);
 
-				return livelyService.Commands.ToResultList(livelyService, commandQuery);
+				return livelyService.Commands.ToResultList(livelyService, context, commandQuery);
 			}
 
 			return livelyService.Wallpapers.Cast<ISearchable>()
 				.Concat(livelyService.Commands)
-				.ToResultList(livelyService, query.Search);
+				.ToResultList(livelyService, context, query.Search);
 		}
 
 		private bool IsLivelyRunning() => Process.GetProcessesByName("Lively")
