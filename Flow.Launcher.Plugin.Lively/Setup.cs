@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using Flow.Launcher.Plugin.Lively.Models;
 using Microsoft.Win32;
 
 namespace Flow.Launcher.Plugin.Lively

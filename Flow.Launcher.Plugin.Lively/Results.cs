@@ -12,7 +12,7 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			public static List<Result> RandomiseCommand(LivelyService livelyService)
 			{
-				var singleMonitor = livelyService.MonitorCount == 1; //TODO: need to add Is per monitor check
+				var singleMonitor = livelyService.MonitorCount == 1 || !livelyService.IsArrangementPerMonitor();
 				var results = new List<Result>();
 				const string prefix = "Set a random wallpaper";
 				results.Add(new Result
@@ -43,7 +43,7 @@ namespace Flow.Launcher.Plugin.Lively
 				const string prefix = "Close active wallpaper";
 
 				if (livelyService.MonitorCount == 1
-				    || livelyService.WallpaperArrangement != WallpaperArrangement.Per
+				    || !livelyService.IsArrangementPerMonitor()
 				    || activeMonitors.Count > 1)
 					results.Add(new Result
 					{
@@ -58,7 +58,7 @@ namespace Flow.Launcher.Plugin.Lively
 						}
 					});
 
-				if (livelyService.WallpaperArrangement != WallpaperArrangement.Per)
+				if (!livelyService.IsArrangementPerMonitor())
 					return results;
 
 				results.AddRange(activeMonitors.Select(activeMonitor =>
@@ -203,7 +203,7 @@ namespace Flow.Launcher.Plugin.Lively
 				var score = 0;
 				if (livelyService.IsActiveWallpaper(wallpaper, out var monitorIndexes))
 				{
-					var offset = livelyService.WallpaperArrangement == WallpaperArrangement.Per
+					var offset = IsArrangementPerMonitor(livelyService)
 						? $"{SelectedEmoji} {string.Join(", ", monitorIndexes)} | "
 						: $"{SelectedEmoji} | ";
 					title = OffsetTitle(title, offset, highlightData);
@@ -256,6 +256,10 @@ namespace Flow.Launcher.Plugin.Lively
 				return true;
 			}
 		};
+
+		private static bool IsArrangementPerMonitor(this LivelyService livelyService) =>
+			livelyService.WallpaperArrangement == WallpaperArrangement.Per;
+
 
 		public static List<Result> ToResultList<T>(this IEnumerable<T> source, LivelyService livelyService,
 			PluginInitContext context,
@@ -332,7 +336,7 @@ namespace Flow.Launcher.Plugin.Lively
 			const string setPrefix = "Set as wallpaper";
 
 			var singleMonitor = livelyService.MonitorCount == 1 ||
-			                    livelyService.WallpaperArrangement != WallpaperArrangement.Per;
+			                    !livelyService.IsArrangementPerMonitor();
 			results.Add(new Result
 			{
 				Title = $"{setPrefix}{AppendAllMonitors(singleMonitor)}",
@@ -343,7 +347,7 @@ namespace Flow.Launcher.Plugin.Lively
 				}
 			});
 
-			if (livelyService.WallpaperArrangement == WallpaperArrangement.Per)
+			if (livelyService.IsArrangementPerMonitor())
 				livelyService.IterateMonitors(index =>
 					results.Add(GetMonitorIndexResult(setPrefix, index,
 						i => livelyService.Api.SetWallpaper(wallpaper, i))));
@@ -364,7 +368,7 @@ namespace Flow.Launcher.Plugin.Lively
 					}
 				});
 
-			if (livelyService.WallpaperArrangement == WallpaperArrangement.Per)
+			if (livelyService.IsArrangementPerMonitor())
 				for (var i = 0; i < activeIndexes.Count; i++)
 					results.Add(GetMonitorIndexResult(closePrefix, activeIndexes[i],
 						index => livelyService.Api.CloseWallpaper(index)));

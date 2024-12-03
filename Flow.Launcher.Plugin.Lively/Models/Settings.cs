@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace Flow.Launcher.Plugin.Lively
+namespace Flow.Launcher.Plugin.Lively.Models
 {
 	public partial class Settings : ObservableValidator
 	{
