@@ -7,6 +7,6 @@
   "Version": "1.0.0",
   "Language": "csharp",
   "Website": "https://github.com/Odotocodot/Flow.Launcher.Plugin.Lively",
-  "IcoPath": "icon.png",
+  "IcoPath": "Images\\icon.png",
   "ExecuteFileName": "Flow.Launcher.Plugin.Lively.dll"
 }

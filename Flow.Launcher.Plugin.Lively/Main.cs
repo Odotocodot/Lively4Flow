@@ -12,7 +12,6 @@ namespace Flow.Launcher.Plugin.Lively
 	{
 		private PluginInitContext context;
 		private LivelyService livelyService;
-		private IconProvider iconProvider;
 		private Settings settings;
 
 		public Task InitAsync(PluginInitContext context)
@@ -76,6 +75,4 @@ namespace Flow.Launcher.Plugin.Lively
 
 		public List<Result> LoadContextMenus(Result result) => Results.ContextMenu(result, livelyService);
 	}
-
-	public class IconProvider { }
 }

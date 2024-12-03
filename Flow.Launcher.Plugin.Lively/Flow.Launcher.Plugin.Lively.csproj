@@ -34,7 +34,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Images\"/>
+        <Content Include="Images\*.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
-
 </Project>

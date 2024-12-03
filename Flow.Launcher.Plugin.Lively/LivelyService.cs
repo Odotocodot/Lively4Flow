@@ -43,16 +43,21 @@ namespace Flow.Launcher.Plugin.Lively
 
 			commands = new CommandCollection
 			{
-				new Command("setwp", "Search and set wallpapers", q => Wallpapers.ToResultList(this, context, q)),
-				new Command("random", "Set a random Wallpaper", _ => Results.For.RandomiseCommand(this)),
-				new Command("closewp", "Close a wallpaper", _ => Results.For.CloseCommand(this)),
-				new Command("volume", "Set the volume of a wallpaper", q => Results.For.VolumeCommand(this, q)),
-				new Command("layout", "Change the wallpaper layout", _ => Results.For.WallpaperArrangements(this)),
-				new Command("playback", "Pause or play wallpaper playback", _ => Results.For.PlaybackCommand(this)),
+				new Command("setwp", "Search and set wallpapers", Constants.Icons.Set,
+					q => Wallpapers.ToResultList(this, context, q)),
+				new Command("random", "Set a random Wallpaper", Constants.Icons.Random,
+					_ => Results.For.RandomiseCommand(this)),
+				new Command("closewp", "Close a wallpaper", Constants.Icons.Close,
+					_ => Results.For.CloseCommand(this)),
+				new Command("volume", "Set the volume of a wallpaper", Constants.Icons.Volume,
+					q => Results.For.VolumeCommand(this, q)),
+				new Command("layout", "Change the wallpaper layout", Constants.Icons.Layout,
+					_ => Results.For.WallpaperArrangements(this)),
+				new Command("playback", "Pause or play wallpaper playback", Constants.Icons.Playback,
+					_ => Results.For.PlaybackCommand(this)),
 				//new Command("seek", "Set wallpaper playback position", null),
-				new Command("open", "Open or Show Lively",
-					_ => Results.SingleResult("Open or Show Lively", null, Api.OpenLively, true)),
-				new Command("quit", "Quit Lively", _ => Results.SingleResult("Quit Lively", null, Api.QuitLively, true))
+				new Command("open", "Open or Show Lively", Constants.Icons.Open, Api.OpenLively),
+				new Command("quit", "Quit Lively", Constants.Icons.Quit, Api.QuitLively)
 			};
 		}
 
