@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ namespace Flow.Launcher.Plugin.Lively
 		private LivelyService livelyService;
 		private IconProvider iconProvider;
 		private Settings settings;
-
 
 		public Task InitAsync(PluginInitContext context)
 		{
@@ -46,12 +44,11 @@ namespace Flow.Launcher.Plugin.Lively
 		public async Task<List<Result>> QueryAsync(Query query, CancellationToken token)
 		{
 			await livelyService.Load(token);
-			var isLivelyRunning = IsLivelyRunning();
 
 			if (string.IsNullOrWhiteSpace(query.Search))
 			{
 				var results = livelyService.Wallpapers.ToResultList(livelyService, context);
-				results.Insert(0, Results.ViewCommandResult(context, isLivelyRunning));
+				results.Insert(0, Results.ViewCommandResult(context));
 				return results;
 			}
 
@@ -72,9 +69,6 @@ namespace Flow.Launcher.Plugin.Lively
 				.Concat(livelyService.Commands)
 				.ToResultList(livelyService, context, query.Search);
 		}
-
-		private bool IsLivelyRunning() => Process.GetProcessesByName("Lively")
-			.FirstOrDefault(p => p.MainModule?.FileName.StartsWith(settings.LivelyExePath) == true) != null;
 
 		public void Dispose() => context.API.VisibilityChanged -= OnVisibilityChanged;
 

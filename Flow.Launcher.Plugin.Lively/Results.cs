@@ -12,7 +12,7 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			public static List<Result> RandomiseCommand(LivelyService livelyService)
 			{
-				var singleMonitor = livelyService.MonitorCount == 1;
+				var singleMonitor = livelyService.MonitorCount == 1; //TODO: need to add Is per monitor check
 				var results = new List<Result>();
 				const string prefix = "Set a random wallpaper";
 				results.Add(new Result
@@ -303,28 +303,14 @@ namespace Flow.Launcher.Plugin.Lively
 		};
 
 
-		public static Result ViewCommandResult(PluginInitContext context, bool isLivelyRunning)
+		public static Result ViewCommandResult(PluginInitContext context)
 		{
-			var autoCompleteText =
-				$"{context.CurrentPluginMetadata.ActionKeyword} {Constants.Commands.Keyword}";
-			var subTitle = $"Type '{Constants.Commands.Keyword}";
-			var title = "View Lively commands";
-			if (isLivelyRunning)
-			{
-				subTitle += "' or select this result to view commands";
-			}
-			else
-			{
-				title += ". [Warning] Lively is not open";
-				subTitle +=
-					$"{Constants.Commands.Open}' or select this result to view available commands"; //There is only one command ;)
-				autoCompleteText += Constants.Commands.Open;
-			}
+			var autoCompleteText = $"{context.CurrentPluginMetadata.ActionKeyword} {Constants.Commands.Keyword}";
 
 			return new Result
 			{
-				Title = title,
-				SubTitle = subTitle,
+				Title = "View Lively commands",
+				SubTitle = $"Type '{Constants.Commands.Keyword}' or select this result to view commands",
 				Score = 100000,
 				AutoCompleteText = autoCompleteText,
 				Action = _ =>

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -22,6 +23,7 @@ namespace Flow.Launcher.Plugin.Lively
 		private readonly ConcurrentDictionary<int, Wallpaper> activeMonitorIndexes = new();
 
 		private bool canLoadData;
+		public bool IsLivelyRunning { get; private set; }
 
 		public IReadOnlyList<Command> Commands => commands;
 		public IEnumerable<Wallpaper> Wallpapers => wallpapers.Keys;
@@ -35,7 +37,7 @@ namespace Flow.Launcher.Plugin.Lively
 			this.settings = settings;
 			localWallpapersPath = Path.Combine(settings.LivelyLibraryFolderPath, Constants.Folders.LocalWallpapers);
 			webWallpapersPath = Path.Combine(settings.LivelyLibraryFolderPath, Constants.Folders.WebWallpapers);
-			Api = new LivelyCommandApi(this);
+			Api = new LivelyCommandApi(this, settings);
 
 			commands = new CommandCollection
 			{
@@ -46,13 +48,17 @@ namespace Flow.Launcher.Plugin.Lively
 				new Command("layout", "Change the wallpaper layout", _ => Results.For.WallpaperArrangements(this)),
 				new Command("playback", "Pause or play wallpaper playback", _ => Results.For.PlaybackCommand(this)),
 				//new Command("seek", "Set wallpaper playback position", null),
-				new Command(Constants.Commands.Open, "Open Lively", null),
+				new Command("open", "Open or Show Lively",
+					_ => Results.SingleResult("Open or Show Lively", null, Api.OpenLively, true)),
 				new Command("quit", "Quit Lively", _ => Results.SingleResult("Quit Lively", null, Api.QuitLively, true))
 			};
 		}
 
 		public async ValueTask Load(CancellationToken token)
 		{
+			IsLivelyRunning = Process.GetProcessesByName("Lively")
+				.FirstOrDefault(p => p.MainModule?.FileName.StartsWith(settings.LivelyExePath) == true) != null;
+
 			if (!canLoadData || token.IsCancellationRequested)
 				return;
 

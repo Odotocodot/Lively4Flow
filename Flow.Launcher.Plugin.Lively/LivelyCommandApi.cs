@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
 using Flow.Launcher.Plugin.Lively.Models;
 
@@ -9,10 +8,12 @@ namespace Flow.Launcher.Plugin.Lively
 	public class LivelyCommandApi
 	{
 		private readonly LivelyService livelyService;
+		private readonly Settings settings;
 
-		public LivelyCommandApi(LivelyService livelyService)
+		public LivelyCommandApi(LivelyService livelyService, Settings settings)
 		{
 			this.livelyService = livelyService;
+			this.settings = settings;
 		}
 
 		public void SetWallpaper(Wallpaper wallpaper)
@@ -39,7 +40,7 @@ namespace Flow.Launcher.Plugin.Lively
 		public void CloseWallpaper() => InternalCloseWallpaper(-1);
 
 		public void OpenLively() => RunCommand("--showApp true");
-		public void QuitLively() => RunCommand("--shutdown true");
+		public void QuitLively() => RunCommand("--shutdown true", false);
 
 		private void InternalSetWallpaper(string wallpaperPath, int? monitorIndex)
 		{
@@ -49,21 +50,28 @@ namespace Flow.Launcher.Plugin.Lively
 			RunCommand(args);
 		}
 
-		private void InternalCloseWallpaper(int monitorIndex) => RunCommand($"closewp --monitor {monitorIndex}");
+		private void InternalCloseWallpaper(int monitorIndex) => RunCommand($"closewp --monitor {monitorIndex}", false);
 
-		public async Task<bool> IsLivelyRunning(CancellationToken token)
+		private void RunCommand(string args, bool autoOpenLively = true)
 		{
-			Process process = Process.Start(new ProcessStartInfo
+			if (!livelyService.IsLivelyRunning && autoOpenLively) 
 			{
-				FileName = Constants.CommandUtility,
-				CreateNoWindow = true,
-				RedirectStandardOutput = true
-			});
-			return (await process!.StandardOutput.ReadToEndAsync(token)).Length <= 10;
-		}
+				//Is a command queue needed or a lock?
+				//Maybe have a static bool field that will force a result with a progress bar saying Lively is loading?
+				ProcessStartInfo livelyProcessStartInfo = settings.InstallType switch
+				{
+					Setup.InstallType.GitHub => new ProcessStartInfo(settings.LivelyExePath),
+					Setup.InstallType
+						.MicrosoftStore => throw new NotImplementedException(), // new ProcessStartInfo("explorer.exe",)
+					Setup.InstallType.None => throw new InvalidOperationException("Lively Wallpaper is not installed!")
+				};
+				livelyProcessStartInfo.CreateNoWindow = true;
 
-		private void RunCommand(string args)
-		{
+				using Process process = Process.Start(livelyProcessStartInfo);
+				process?.WaitForInputIdle();
+				Task.Delay(1000);
+			}
+
 			Process.Start(new ProcessStartInfo
 			{
 				FileName = Constants.CommandUtility,
