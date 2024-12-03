@@ -6,9 +6,9 @@ using Microsoft.Win32;
 
 namespace Flow.Launcher.Plugin.Lively
 {
-	public static class SettingsHelper
+	public static class Setup
 	{
-		private enum InstallType
+		public enum InstallType
 		{
 			None,
 			GitHub,
@@ -16,22 +16,22 @@ namespace Flow.Launcher.Plugin.Lively
 		}
 
 
-		public static void ForceSetup(Settings settings, PluginInitContext context)
+		public static void ForceRun(Settings settings, PluginInitContext context)
 		{
 			settings.RunSetup = false;
-			Setup(settings, context);
+			Run(settings, context);
 		}
 
-		public static void Setup(Settings settings, PluginInitContext context)
+		public static void Run(Settings settings, PluginInitContext context)
 		{
 			if (settings.RunSetup) //TODO: if InstallType == None also run
 				return;
 			Log(context, "Starting Setup");
 
-			InstallType installType = GetInstallLocation(context, out var exePath);
+			settings.InstallType = GetInstallLocation(context, out var exePath);
 
 			string baseStoragePath;
-			switch (installType)
+			switch (settings.InstallType)
 			{
 				case InstallType.GitHub:
 					Log(context, $"Lively exe [GitHub Version] was found at: \"{exePath}\"");
@@ -183,14 +183,14 @@ namespace Flow.Launcher.Plugin.Lively
 				UseShellExecute = false,
 				RedirectStandardOutput = true
 			});
-			exePath = process?.StandardOutput.ReadToEnd();
+			exePath = process?.StandardOutput.ReadToEnd().TrimEnd();
 
 			return !string.IsNullOrWhiteSpace(exePath);
 		}
 
 		private static void Log(PluginInitContext context, string message, [CallerMemberName] string method = "")
 		{
-			context.API.LogInfo("LivelyWallpaperController." + nameof(SettingsHelper), message, method);
+			context.API.LogInfo("LivelyWallpaperController." + nameof(Setup), message, method);
 		}
 	}
 }

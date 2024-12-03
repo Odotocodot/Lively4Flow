@@ -7,6 +7,7 @@ namespace Flow.Launcher.Plugin.Lively
 		[ObservableProperty] private string livelySettingsJsonPath;
 		[ObservableProperty] private string livelyExePath;
 		[ObservableProperty] private string livelyLibraryFolderPath;
+		[ObservableProperty] private Setup.InstallType installType;
 		[ObservableProperty] private bool runSetup;
 	}
 }
