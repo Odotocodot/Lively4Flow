@@ -30,7 +30,7 @@ namespace Flow.Launcher.Plugin.Lively
 		public IReadOnlyDictionary<int, Wallpaper> ActiveMonitorIndexes => activeMonitorIndexes;
 		public LivelyCommandApi Api { get; }
 		public WallpaperArrangement WallpaperArrangement { get; private set; }
-		public int MonitorCount => Screen.AllScreens.Length;
+		public int MonitorCount { get; private set; }
 
 		public LivelyService(Settings settings, PluginInitContext context)
 		{
@@ -59,6 +59,8 @@ namespace Flow.Launcher.Plugin.Lively
 			IsLivelyRunning = Process.GetProcessesByName("Lively")
 				.FirstOrDefault(p => p.MainModule?.FileName.StartsWith(settings.LivelyExePath) == true) != null;
 
+			MonitorCount = Screen.AllScreens.Length;
+			
 			if (!canLoadData || token.IsCancellationRequested)
 				return;
 

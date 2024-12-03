@@ -18,6 +18,7 @@ namespace Flow.Launcher.Plugin.Lively
 				results.Add(new Result
 				{
 					Title = $"{prefix}{AppendAllMonitors(singleMonitor)}",
+					Score = (livelyService.MonitorCount + 2) * ScoreMultiplier,
 					Action = _ =>
 					{
 						livelyService.Api.RandomiseWallpaper();
@@ -28,7 +29,10 @@ namespace Flow.Launcher.Plugin.Lively
 					return results;
 
 				livelyService.IterateMonitors(index =>
-					results.Add(GetMonitorIndexResult(prefix, index, i => livelyService.Api.RandomiseWallpaper(i))));
+					results.Add(GetMonitorIndexResult(prefix,
+						index,
+						(livelyService.MonitorCount + 1) * ScoreMultiplier,
+						i => livelyService.Api.RandomiseWallpaper(i))));
 
 				return results;
 			}
@@ -51,6 +55,7 @@ namespace Flow.Launcher.Plugin.Lively
 						SubTitle = activeMonitors.Count <= 1
 							? $"Current Wallpaper: {activeMonitors.First().Value.Title}"
 							: null,
+						Score = (livelyService.MonitorCount + 2) * ScoreMultiplier,
 						Action = _ =>
 						{
 							livelyService.Api.CloseWallpaper();
@@ -64,6 +69,7 @@ namespace Flow.Launcher.Plugin.Lively
 				results.AddRange(activeMonitors.Select(activeMonitor =>
 					GetMonitorIndexResult(prefix,
 						activeMonitor.Key,
+						(livelyService.MonitorCount + 1) * ScoreMultiplier,
 						index => livelyService.Api.CloseWallpaper(index),
 						$"Current Wallpaper: {activeMonitor.Value.Title}")));
 
@@ -87,7 +93,7 @@ namespace Flow.Launcher.Plugin.Lively
 					{
 						Title = $"Set wallpaper volume{titleSuffix}",
 						SubTitle = "Type a value between 0 and 100 to specify",
-						Score = 3000,
+						Score = 3 * ScoreMultiplier,
 						Action = _ =>
 						{
 							if (volume.HasValue)
@@ -98,7 +104,7 @@ namespace Flow.Launcher.Plugin.Lively
 					new()
 					{
 						Title = "Set wallpaper volume to 0 (Mute)",
-						Score = 2000,
+						Score = 2 * ScoreMultiplier,
 						Action = _ =>
 						{
 							livelyService.Api.SetVolume(0);
@@ -108,7 +114,7 @@ namespace Flow.Launcher.Plugin.Lively
 					new()
 					{
 						Title = "Set wallpaper volume to 50",
-						Score = 1000,
+						Score = 1 * ScoreMultiplier,
 						Action = _ =>
 						{
 							livelyService.Api.SetVolume(50);
@@ -165,6 +171,7 @@ namespace Flow.Launcher.Plugin.Lively
 						{
 							Title = title,
 							ContextData = arrangement,
+							Score = ScoreMultiplier * (3 - (int)arrangement),
 							Action = _ =>
 							{
 								//TODO: reapply the current wallpapers
@@ -229,6 +236,7 @@ namespace Flow.Launcher.Plugin.Lively
 		}
 
 		private const string SelectedEmoji = "\u2605"; //or ⭐\u2b50
+		private const int ScoreMultiplier = 1000;
 
 		//Invert boolean maybe
 		private static string AppendAllMonitors(bool singleMonitor) => singleMonitor ? "" : " on all monitors";
@@ -245,11 +253,12 @@ namespace Flow.Launcher.Plugin.Lively
 			return title;
 		}
 
-		private static Result GetMonitorIndexResult(string prefix, int index, Action<int> action,
+		private static Result GetMonitorIndexResult(string prefix, int index, int maxScore, Action<int> action,
 			string subTitle = null) => new()
 		{
 			Title = $"{prefix} on monitor {index}",
 			SubTitle = subTitle,
+			Score = maxScore - ScoreMultiplier * index,
 			Action = _ =>
 			{
 				action(index);
@@ -315,7 +324,7 @@ namespace Flow.Launcher.Plugin.Lively
 			{
 				Title = "View Lively commands",
 				SubTitle = $"Type '{Constants.Commands.Keyword}' or select this result to view commands",
-				Score = 100000,
+				Score = 100 * ScoreMultiplier,
 				AutoCompleteText = autoCompleteText,
 				Action = _ =>
 				{
@@ -340,6 +349,7 @@ namespace Flow.Launcher.Plugin.Lively
 			results.Add(new Result
 			{
 				Title = $"{setPrefix}{AppendAllMonitors(singleMonitor)}",
+				Score = (livelyService.MonitorCount + 2) * ScoreMultiplier,
 				Action = _ =>
 				{
 					livelyService.Api.SetWallpaper(wallpaper);
@@ -349,7 +359,9 @@ namespace Flow.Launcher.Plugin.Lively
 
 			if (livelyService.IsArrangementPerMonitor())
 				livelyService.IterateMonitors(index =>
-					results.Add(GetMonitorIndexResult(setPrefix, index,
+					results.Add(GetMonitorIndexResult(setPrefix,
+						index,
+						(livelyService.MonitorCount + 1) * ScoreMultiplier,
 						i => livelyService.Api.SetWallpaper(wallpaper, i))));
 
 			//Closing wallpapers
@@ -361,6 +373,7 @@ namespace Flow.Launcher.Plugin.Lively
 				results.Add(new Result
 				{
 					Title = $"{closePrefix}{AppendAllMonitors(activeIndexes.Count <= 1)}",
+					Score =(livelyService.MonitorCount + 2) * ScoreMultiplier,
 					Action = _ =>
 					{
 						livelyService.Api.CloseWallpaper();
@@ -370,7 +383,9 @@ namespace Flow.Launcher.Plugin.Lively
 
 			if (livelyService.IsArrangementPerMonitor())
 				for (var i = 0; i < activeIndexes.Count; i++)
-					results.Add(GetMonitorIndexResult(closePrefix, activeIndexes[i],
+					results.Add(GetMonitorIndexResult(closePrefix,
+						activeIndexes[i],
+						(livelyService.MonitorCount + 1) * ScoreMultiplier,
 						index => livelyService.Api.CloseWallpaper(index)));
 
 
