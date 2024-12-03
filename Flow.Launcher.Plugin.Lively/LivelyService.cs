@@ -15,6 +15,7 @@ namespace Flow.Launcher.Plugin.Lively
 {
 	public class LivelyService
 	{
+		private readonly PluginInitContext context;
 		private readonly Settings settings;
 		private readonly string localWallpapersPath;
 		private readonly string webWallpapersPath;
@@ -35,6 +36,7 @@ namespace Flow.Launcher.Plugin.Lively
 		public LivelyService(Settings settings, PluginInitContext context)
 		{
 			this.settings = settings;
+			this.context = context;
 			localWallpapersPath = Path.Combine(settings.LivelyLibraryFolderPath, Constants.Folders.LocalWallpapers);
 			webWallpapersPath = Path.Combine(settings.LivelyLibraryFolderPath, Constants.Folders.WebWallpapers);
 			Api = new LivelyCommandApi(this, settings);
@@ -60,7 +62,7 @@ namespace Flow.Launcher.Plugin.Lively
 				.FirstOrDefault(p => p.MainModule?.FileName.StartsWith(settings.LivelyExePath) == true) != null;
 
 			MonitorCount = Screen.AllScreens.Length;
-			
+
 			if (!canLoadData || token.IsCancellationRequested)
 				return;
 
@@ -78,16 +80,28 @@ namespace Flow.Launcher.Plugin.Lively
 			await Parallel.ForEachAsync(
 				LoadWallpaperFolders(parallelOptions.MaxDegreeOfParallelism, token),
 				parallelOptions,
-				async (wallpaperFolder, ct) => await LoadData(wallpaperFolder, await currentWallpaperTask, ct));
+				async (wallpaperFolder, t) => await LoadAllWallpapers(wallpaperFolder, await currentWallpaperTask, t));
 		}
 
-		private async ValueTask LoadData(string wallpaperFolder, WallpaperLayout[] currentWallpapers,
-			CancellationToken ct)
+		private async ValueTask LoadAllWallpapers(string wallpaperFolder, WallpaperLayout[] currentWallpapers,
+			CancellationToken token)
 		{
-			if (ct.IsCancellationRequested)
+			if (token.IsCancellationRequested)
 				return;
 
-			Wallpaper wallpaper = await LoadWallpaper(wallpaperFolder, ct);
+			Wallpaper wallpaper;
+			try
+			{
+				wallpaper = await LoadWallpaper(wallpaperFolder, token);
+			}
+			catch (Exception e) when (e is FileNotFoundException or JsonException)
+			{
+				context.API.LogException("LivelyWallpaperController." + nameof(LivelyService),
+					$"Failed loading wallpaper at: \"{wallpaperFolder}\"",
+					e);
+				return;
+			}
+
 			List<int> activeIndexes = null;
 			for (var i = 0; i < currentWallpapers.Length; i++)
 			{
