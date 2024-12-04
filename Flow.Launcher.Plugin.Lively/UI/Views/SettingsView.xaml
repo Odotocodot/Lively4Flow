@@ -1,0 +1,49 @@
+<UserControl x:Class="Flow.Launcher.Plugin.Lively.UI.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="clr-namespace:Flow.Launcher.Plugin.Lively.UI.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
+             d:DesignHeight="300" d:DesignWidth="300">
+
+    <StackPanel Orientation="Vertical">
+
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Command Keyword" />
+            <TextBox Text="{Binding CommandKeyword}" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Display monitor name rather than index" />
+            <ToggleButton IsChecked="{Binding UseMonitorName}" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Lively Library Folder" />
+            <TextBox Text="{Binding LivelyLibraryFolder}" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Lively Settings File" />
+            <TextBox Text="{Binding LivelySettingsFile}" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Lively Install Type" />
+            <ComboBox SelectedItem="{Binding LivelyInstallType}" />
+        </StackPanel>
+
+        <!-- Only show if Install Type == GitHub -->
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Lively Exe Path" />
+            <TextBox Text="{Binding LivelyExePath}" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Run Quick Setup" ToolTip="This will overwrite all text settings" />
+            <Button Content="Run" Command="{Binding QuickSetupCommand}" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

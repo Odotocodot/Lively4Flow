@@ -10,5 +10,8 @@ namespace Flow.Launcher.Plugin.Lively.UI
 	{
 		public static Lazy<UserControl> GetUserControl(this Wallpaper wallpaper) =>
 			new(() => new WallpaperPreviewPanel(new WallpaperViewModel(wallpaper)));
+
+		public static Control GetSettingsView(this Settings settings, PluginInitContext context) =>
+			new SettingsView(new SettingsViewModel(settings, context));
 	}
 }

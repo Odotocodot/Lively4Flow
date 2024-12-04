@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using Flow.Launcher.Plugin.Lively.Models;
+using Flow.Launcher.Plugin.Lively.UI;
 
 namespace Flow.Launcher.Plugin.Lively
 {
@@ -71,7 +72,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 		public void Dispose() => context.API.VisibilityChanged -= OnVisibilityChanged;
 
-		public Control CreateSettingPanel() => throw new NotImplementedException();
+		public Control CreateSettingPanel() => settings.GetSettingsView(context);
 
 		public List<Result> LoadContextMenus(Result result) => Results.ContextMenu(result, livelyService);
 	}
