@@ -10,7 +10,7 @@ namespace Flow.Launcher.Plugin.Lively.Models
 		string Preview,
 		string Desc,
 		string Author,
-		string License,
+		//string License,
 		string Contact
 		//WallpaperType Type,
 		//string FileName,

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Flow.Launcher.Plugin.Lively.Models;
+using Flow.Launcher.Plugin.Lively.UI;
 using Flow.Launcher.Plugin.SharedModels;
 
 namespace Flow.Launcher.Plugin.Lively
@@ -237,6 +238,7 @@ namespace Flow.Launcher.Plugin.Lively
 					IcoPath = wallpaper.IconPath,
 					Score = score,
 					ContextData = wallpaper,
+					PreviewPanel = wallpaper.GetUserControl(),
 					TitleHighlightData = highlightData,
 					Action = _ =>
 					{
