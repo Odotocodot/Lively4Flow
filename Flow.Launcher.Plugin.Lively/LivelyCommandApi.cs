@@ -61,19 +61,19 @@ namespace Flow.Launcher.Plugin.Lively
 
 			ProcessStartInfo psi = settings.InstallType switch
 			{
-				Setup.InstallType.GitHub => new ProcessStartInfo
+				LivelyInstallType.GitHub => new ProcessStartInfo
 				{
-					FileName = settings.LivelyExePath, 
-					Arguments = args, 
+					FileName = settings.LivelyExePath,
+					Arguments = args,
 					CreateNoWindow = true
 				},
-				Setup.InstallType.MicrosoftStore => new ProcessStartInfo
+				LivelyInstallType.MicrosoftStore => new ProcessStartInfo
 				{
 					UseShellExecute = true,
-					FileName = $"shell:AppsFolder\\{Constants.Lively.AppID}!App",
+					FileName = $"shell:AppsFolder\\{Constants.Lively.AppId}!App",
 					Arguments = args
 				},
-				Setup.InstallType.None => throw new InvalidOperationException("Lively Wallpaper is not installed!"),
+				LivelyInstallType.None => throw new InvalidOperationException("Lively Wallpaper is not installed!"),
 				_ => throw new InvalidCastException("Invalid InstallType")
 			};
 
@@ -84,10 +84,10 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			ProcessStartInfo livelyProcessStartInfo = settings.InstallType switch
 			{
-				Setup.InstallType.GitHub => new ProcessStartInfo(settings.LivelyExePath),
-				Setup.InstallType.MicrosoftStore => new ProcessStartInfo("explorer.exe",
-					$"shell:AppsFolder\\{Constants.Lively.AppID}!App"),
-				Setup.InstallType.None => throw new InvalidOperationException("Lively Wallpaper is not installed!"),
+				LivelyInstallType.GitHub => new ProcessStartInfo(settings.LivelyExePath),
+				LivelyInstallType.MicrosoftStore => new ProcessStartInfo("explorer.exe",
+					$"shell:AppsFolder\\{Constants.Lively.AppId}!App"),
+				LivelyInstallType.None => throw new InvalidOperationException("Lively Wallpaper is not installed!"),
 				_ => throw new InvalidCastException("Invalid InstallType")
 			};
 			livelyProcessStartInfo.CreateNoWindow = true;

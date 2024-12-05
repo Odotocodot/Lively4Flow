@@ -15,6 +15,7 @@ namespace Flow.Launcher.Plugin.Lively
 			public const string WebWallpapers = $"{SaveData}\\wptmp";
 			public const string WpData = $"{SaveData}\\wpdata";
 			public const string SaveData = "SaveData";
+			public const string DefaultLibraryName = "Library";
 		}
 
 		public static class Commands
@@ -39,7 +40,7 @@ namespace Flow.Launcher.Plugin.Lively
 		public static class Lively
 		{
 			public const string AppName = "12030rocksdanister.LivelyWallpaper";
-			public const string AppID = AppName + "_97hta09mmv6hy";
+			public const string AppId = AppName + "_97hta09mmv6hy";
 		}
 	}
 }

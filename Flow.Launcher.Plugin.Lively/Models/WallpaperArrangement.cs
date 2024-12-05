@@ -1,4 +1,4 @@
-namespace Flow.Launcher.Plugin.Lively
+namespace Flow.Launcher.Plugin.Lively.Models
 {
 	public enum WallpaperArrangement
 	{

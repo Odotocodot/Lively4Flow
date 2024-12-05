@@ -78,8 +78,8 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			}
 		}
 
-		[EnumDataType(typeof(Setup.InstallType))]
-		public Setup.InstallType LivelyInstallType
+		[EnumDataType(typeof(LivelyInstallType))]
+		public LivelyInstallType LivelyInstallType
 		{
 			get => settings.InstallType;
 			set
@@ -93,7 +93,7 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 		[RelayCommand]
 		private void QuickSetup()
 		{
-			Setup.ForceRun(settings, context);
+			Lively.QuickSetup.ForceRun(settings, context);
 			//TODO: Notify properties have changed
 		}
 	}

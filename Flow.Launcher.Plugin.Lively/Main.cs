@@ -20,7 +20,7 @@ namespace Flow.Launcher.Plugin.Lively
 			this.context = context;
 			context.API.VisibilityChanged += OnVisibilityChanged;
 			settings = context.API.LoadSettingJsonStorage<Settings>();
-			Setup.Run(settings, this.context);
+			QuickSetup.Run(settings, this.context);
 			livelyService = new LivelyService(settings, context);
 			return Task.CompletedTask;
 		}
