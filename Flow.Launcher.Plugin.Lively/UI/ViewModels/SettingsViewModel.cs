@@ -1,6 +1,8 @@
+using System.ComponentModel.DataAnnotations;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Flow.Launcher.Plugin.Lively.Models;
+using Flow.Launcher.Plugin.Lively.UI.Validation;
 
 namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 {
@@ -15,6 +17,8 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			this.context = context;
 		}
 
+		[Required]
+		[LivelyLibraryFolderValidation]
 		public string LivelyLibraryFolder
 		{
 			get => settings.LivelyLibraryFolderPath;
@@ -22,6 +26,7 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			{
 				settings.LivelyLibraryFolderPath = value;
 				OnPropertyChanged();
+				ValidateProperty(value);
 			}
 		}
 
@@ -35,6 +40,8 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			}
 		}
 
+		[Required]
+		[LivelySettingsFileValidation]
 		public string LivelySettingsFile
 		{
 			get => settings.LivelySettingsJsonPath;
@@ -42,9 +49,12 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			{
 				settings.LivelySettingsJsonPath = value;
 				OnPropertyChanged();
+				ValidateProperty(value);
 			}
 		}
 
+		[Required]
+		[LivelyExePathValidation]
 		public string LivelyExePath
 		{
 			get => settings.LivelyExePath;
@@ -55,6 +65,8 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			}
 		}
 
+		[Required]
+		[MinLength(1)]
 		public string CommandKeyword
 		{
 			get => settings.CommandKeyword;
@@ -62,9 +74,11 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			{
 				settings.CommandKeyword = value;
 				OnPropertyChanged();
+				ValidateProperty(settings.CommandKeyword);
 			}
 		}
 
+		[EnumDataType(typeof(Setup.InstallType))]
 		public Setup.InstallType LivelyInstallType
 		{
 			get => settings.InstallType;
@@ -72,6 +86,7 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			{
 				settings.InstallType = value;
 				OnPropertyChanged();
+				ValidateProperty(settings.InstallType);
 			}
 		}
 

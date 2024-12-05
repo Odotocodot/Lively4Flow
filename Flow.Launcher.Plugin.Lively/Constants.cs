@@ -6,12 +6,15 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			public const string WallpaperLayout = "WallpaperLayout.json";
 			public const string LivelyInfo = "LivelyInfo.json";
+			public const string LivelySettings = "Settings.json";
 		}
 
 		public static class Folders
 		{
 			public const string LocalWallpapers = "wallpapers";
-			public const string WebWallpapers = "SaveData\\wptmp";
+			public const string WebWallpapers = $"{SaveData}\\wptmp";
+			public const string WpData = $"{SaveData}\\wpdata";
+			public const string SaveData = "SaveData";
 		}
 
 		public static class Commands

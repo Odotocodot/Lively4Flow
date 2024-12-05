@@ -45,5 +45,9 @@
             <TextBlock Text="Run Quick Setup" ToolTip="This will overwrite all text settings" />
             <Button Content="Run" Command="{Binding QuickSetupCommand}" />
         </StackPanel>
+
+        <StackPanel Orientation="Horizontal">
+            <Button Content="Revert" Command="{Binding QuickSetupCommand}" />
+        </StackPanel>
     </StackPanel>
 </UserControl>
