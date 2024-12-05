@@ -54,30 +54,46 @@ namespace Flow.Launcher.Plugin.Lively
 
 		private void RunCommand(string args, bool autoOpenLively = true)
 		{
-			if (!livelyService.IsLivelyRunning && autoOpenLively) 
-			{
-				//Is a command queue needed or a lock?
+			if (!livelyService.IsLivelyRunning && autoOpenLively)
+				//TODO: Is a command queue needed or a lock?
 				//Maybe have a static bool field that will force a result with a progress bar saying Lively is loading?
-				ProcessStartInfo livelyProcessStartInfo = settings.InstallType switch
-				{
-					Setup.InstallType.GitHub => new ProcessStartInfo(settings.LivelyExePath),
-					Setup.InstallType
-						.MicrosoftStore => throw new NotImplementedException(), // new ProcessStartInfo("explorer.exe",)
-					Setup.InstallType.None => throw new InvalidOperationException("Lively Wallpaper is not installed!")
-				};
-				livelyProcessStartInfo.CreateNoWindow = true;
+				StartLively();
 
-				using Process process = Process.Start(livelyProcessStartInfo);
-				process?.WaitForInputIdle();
-				Task.Delay(1000);
-			}
-
-			Process.Start(new ProcessStartInfo
+			ProcessStartInfo psi = settings.InstallType switch
 			{
-				FileName = Constants.CommandUtility,
-				Arguments = args,
-				CreateNoWindow = true
-			});
+				Setup.InstallType.GitHub => new ProcessStartInfo
+				{
+					FileName = settings.LivelyExePath, 
+					Arguments = args, 
+					CreateNoWindow = true
+				},
+				Setup.InstallType.MicrosoftStore => new ProcessStartInfo
+				{
+					UseShellExecute = true,
+					FileName = $"shell:AppsFolder\\{Constants.Lively.AppID}!App",
+					Arguments = args
+				},
+				Setup.InstallType.None => throw new InvalidOperationException("Lively Wallpaper is not installed!"),
+				_ => throw new InvalidCastException("Invalid InstallType")
+			};
+
+			using Process process = Process.Start(psi);
+		}
+
+		private void StartLively()
+		{
+			ProcessStartInfo livelyProcessStartInfo = settings.InstallType switch
+			{
+				Setup.InstallType.GitHub => new ProcessStartInfo(settings.LivelyExePath),
+				Setup.InstallType.MicrosoftStore => new ProcessStartInfo("explorer.exe",
+					$"shell:AppsFolder\\{Constants.Lively.AppID}!App"),
+				Setup.InstallType.None => throw new InvalidOperationException("Lively Wallpaper is not installed!"),
+				_ => throw new InvalidCastException("Invalid InstallType")
+			};
+			livelyProcessStartInfo.CreateNoWindow = true;
+			using Process process = Process.Start(livelyProcessStartInfo);
+			process?.WaitForInputIdle();
+			Task.Delay(1000);
 		}
 	}
 }

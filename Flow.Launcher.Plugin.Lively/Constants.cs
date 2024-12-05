@@ -1,6 +1,3 @@
-using System.IO;
-using System.Reflection;
-
 namespace Flow.Launcher.Plugin.Lively
 {
 	public static class Constants
@@ -36,8 +33,10 @@ namespace Flow.Launcher.Plugin.Lively
 			public const string Lively = Base + "icon.png";
 		}
 
-		public static readonly string CommandUtility = Path.Combine(
-			Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-			"Lively Command Utility\\Livelycu.exe");
+		public static class Lively
+		{
+			public const string AppName = "12030rocksdanister.LivelyWallpaper";
+			public const string AppID = AppName + "_97hta09mmv6hy";
+		}
 	}
 }

@@ -20,23 +20,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="plugin.json">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="Lively Command Utility\**">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
+        <Content Include="plugin.json" CopyToOutputDirectory="Always"/>
+        <Content Include="Images\*.png" CopyToOutputDirectory="PreserveNewest"/>
 
-    <ItemGroup>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2"/>
         <PackageReference Include="Flow.Launcher.Plugin" Version="4.4.0"/>
         <PackageReference Include="System.Linq.Async" Version="6.0.1"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Content Include="Images\*.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
     </ItemGroup>
 </Project>

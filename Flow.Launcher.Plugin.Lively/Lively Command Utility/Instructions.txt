@@ -1,5 +1,0 @@
-For more information:
-https://github.com/rocksdanister/lively/wiki/Command-Line-Controls
-
-Downloaded from:
-https://github.com/rocksdanister/lively/releases/tag/v2.0.4.0
