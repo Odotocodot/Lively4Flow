@@ -11,6 +11,21 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 		private readonly Settings settings;
 		private readonly PluginInitContext context;
 
+		//For DesignTime
+		public SettingsViewModel()
+		{
+			settings = new Settings
+			{
+				LivelySettingsJsonPath = @"C:\Folder\Settings.json",
+				LivelyExePath = @"C:\Folder\Lively.exe",
+				LivelyLibraryFolderPath = @"C:\Folder\Library",
+				InstallType = LivelyInstallType.GitHub,
+				HasRunQuickSetup = true,
+				CommandKeyword = "!",
+				UseMonitorName = false
+			};
+		}
+
 		public SettingsViewModel(Settings settings, PluginInitContext context)
 		{
 			this.settings = settings;
@@ -74,7 +89,7 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			{
 				settings.CommandKeyword = value;
 				OnPropertyChanged();
-				ValidateProperty(settings.CommandKeyword);
+				ValidateProperty(value);
 			}
 		}
 
@@ -86,9 +101,12 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			{
 				settings.InstallType = value;
 				OnPropertyChanged();
-				ValidateProperty(settings.InstallType);
+				OnPropertyChanged(nameof(ExeVisibility));
+				ValidateProperty(value);
 			}
 		}
+
+		public bool ExeVisibility => LivelyInstallType == LivelyInstallType.GitHub;
 
 		[RelayCommand]
 		private void QuickSetup()
