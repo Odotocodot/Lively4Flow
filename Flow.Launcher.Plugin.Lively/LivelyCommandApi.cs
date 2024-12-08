@@ -92,7 +92,7 @@ namespace Flow.Launcher.Plugin.Lively
 			};
 			livelyProcessStartInfo.CreateNoWindow = true;
 			using Process process = Process.Start(livelyProcessStartInfo);
-			process?.WaitForInputIdle();
+			process?.WaitForInputIdle(5000);
 			Task.Delay(1000);
 		}
 	}

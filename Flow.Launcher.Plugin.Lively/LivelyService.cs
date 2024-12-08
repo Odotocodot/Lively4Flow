@@ -163,8 +163,12 @@ namespace Flow.Launcher.Plugin.Lively
 			return wallpaper;
 		}
 
-		public bool IsActiveWallpaper(Wallpaper wallpaper, out List<int> livelyMonitorIndexes) =>
-			!wallpapers.TryGetValue(wallpaper, out livelyMonitorIndexes);
+		public bool IsActiveWallpaper(Wallpaper wallpaper, out List<int> livelyMonitorIndexes)
+		{
+			livelyMonitorIndexes = wallpapers[wallpaper];
+			return livelyMonitorIndexes?.Any() == true;
+		}
+
 
 		public bool TryGetCommand(string query, out Command command) => commands.TryGetValue(query, out command);
 
