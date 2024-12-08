@@ -21,8 +21,6 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 				LivelyLibraryFolderPath = @"C:\Folder\Library",
 				InstallType = LivelyInstallType.GitHub,
 				HasRunQuickSetup = true,
-				CommandKeyword = "!",
-				UseMonitorName = false
 			};
 		}
 
@@ -44,17 +42,7 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 				ValidateProperty(value);
 			}
 		}
-
-		public bool UseMonitorName
-		{
-			get => settings.UseMonitorName;
-			set
-			{
-				settings.UseMonitorName = value;
-				OnPropertyChanged();
-			}
-		}
-
+		
 		[Required]
 		[LivelySettingsFileValidation]
 		public string LivelySettingsFile
@@ -77,19 +65,6 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			{
 				settings.LivelyExePath = value;
 				OnPropertyChanged();
-			}
-		}
-
-		[Required]
-		[MinLength(1)]
-		public string CommandKeyword
-		{
-			get => settings.CommandKeyword;
-			set
-			{
-				settings.CommandKeyword = value;
-				OnPropertyChanged();
-				ValidateProperty(value);
 			}
 		}
 

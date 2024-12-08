@@ -22,39 +22,8 @@
 
 
     <StackPanel Margin="25,0,25,25">
-        <!--#region Command Keyword-->
-        <Border CornerRadius="0,0,0,0" Style="{DynamicResource SettingGroupBox}">
-            <ItemsControl Style="{StaticResource SettingGrid}">
-                <StackPanel Style="{StaticResource TextPanel}">
-                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Lively commands keyword" />
-                </StackPanel>
-                <TextBox
-                    Grid.Column="2"
-                    MinWidth="50"
-                    Margin="0,4,18,4"
-                    Text="{Binding CommandKeyword}" />
-            </ItemsControl>
-        </Border>
-        <!--#endregion-->
-
-        <!--#region Use Monitor name-->
-        <Border Style="{DynamicResource SettingGroupBox}">
-            <ItemsControl Style="{StaticResource SettingGrid}">
-                <StackPanel Style="{StaticResource TextPanel}">
-                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Use monitor name over monitor index" />
-                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}"
-                               Text="A description with example &quot;&quot;" />
-                </StackPanel>
-                <CheckBox
-                    Grid.Column="2"
-                    Margin="0,4,18,4"
-                    IsChecked="{Binding UseMonitorName}" />
-            </ItemsControl>
-        </Border>
-        <!--#endregion-->
-
         <!--#region Lively Library Folder icons-->
-        <Border Style="{DynamicResource SettingGroupBox}">
+        <Border CornerRadius="0,0,0,0" Style="{DynamicResource SettingGroupBox}">
             <ItemsControl Style="{StaticResource SettingGrid}">
                 <StackPanel Style="{StaticResource TextPanel}">
                     <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Lively library folder" />

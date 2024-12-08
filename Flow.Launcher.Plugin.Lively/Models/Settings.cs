@@ -7,7 +7,5 @@ namespace Flow.Launcher.Plugin.Lively.Models
 		public string LivelyLibraryFolderPath { get; set; }
 		public LivelyInstallType InstallType { get; set; }
 		public bool HasRunQuickSetup { get; set; }
-		public string CommandKeyword { get; set; } = "!"; //TODO: Implement
-		public bool UseMonitorName { get; set; } //TODO: Implement
 	}
 }
