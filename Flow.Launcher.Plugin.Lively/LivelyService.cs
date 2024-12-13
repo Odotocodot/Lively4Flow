@@ -110,18 +110,21 @@ namespace Flow.Launcher.Plugin.Lively
 			List<int> activeIndexes = null;
 			for (var i = 0; i < currentWallpapers.Length; i++)
 			{
-				var ((_, monitorIndex), folderPath) = currentWallpapers[i];
-				if (wallpaper.FolderPath != folderPath)
+				WallpaperLayout currentWallpaper = currentWallpapers[i];
+				if (GetFolderName(wallpaper.FolderPath) != GetFolderName(currentWallpaper.LivelyInfoPath))
 					continue;
 				activeIndexes ??= new List<int>();
-				activeIndexes.Add(monitorIndex);
-				activeMonitorIndexes.TryAdd(monitorIndex, wallpaper);
+				activeIndexes.Add(currentWallpaper.LivelyScreen.Index);
+				activeMonitorIndexes.TryAdd(currentWallpaper.LivelyScreen.Index, wallpaper);
 			}
 
 			activeIndexes?.Sort();
 			wallpapers.TryAdd(wallpaper, activeIndexes);
 			//Context.API.LogInfo(nameof(LivelyService), "ADDED WALLPAPER TO DICT - " + wallpaperFolder);
 		}
+
+		private static string GetFolderName(string folderPath) =>
+			Path.GetFileName(Path.TrimEndingDirectorySeparator(folderPath));
 
 		private async ValueTask LoadLivelySettings(CancellationToken token)
 		{

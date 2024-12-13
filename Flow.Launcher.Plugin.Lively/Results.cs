@@ -224,9 +224,9 @@ namespace Flow.Launcher.Plugin.Lively
 				var score = 0;
 				if (livelyService.IsActiveWallpaper(wallpaper, out var monitorIndexes))
 				{
-					var offset = IsArrangementPerMonitor(livelyService)
-						? $"{SelectedEmoji} {string.Join(", ", monitorIndexes)} | "
-						: $"{SelectedEmoji} | ";
+					var offset = !IsArrangementPerMonitor(livelyService) || livelyService.MonitorCount == 1
+						? $"{SelectedEmoji} | "
+						: $"{SelectedEmoji} {string.Join(", ", monitorIndexes)} | ";
 					title = OffsetTitle(title, offset, highlightData);
 					score = 2 * ScoreMultiplier;
 				}
