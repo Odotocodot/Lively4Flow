@@ -31,13 +31,15 @@ namespace Flow.Launcher.Plugin.Lively
 		public IReadOnlyDictionary<int, Wallpaper> ActiveMonitorIndexes => activeMonitorIndexes;
 		public LivelyCommandApi Api { get; }
 		public WallpaperArrangement WallpaperArrangement { get; private set; }
+		public int MonitorCount { get; private set; }
+
+		/// <returns><see langword="true"/> if only there is only one place to display a wallpaper</returns>
+		public bool IsSingleDisplay => MonitorCount == 1 || WallpaperArrangement != WallpaperArrangement.Per;
 
 		/// <summary>
 		/// This can be "incorrect" when using the MS store version. See <see cref="Wallpaper.LivelyFolderPath"/>
 		/// </summary>
 		private string WallpaperDirectory { get; set; }
-
-		public int MonitorCount { get; private set; }
 
 		public LivelyService(Settings settings, PluginInitContext context)
 		{
@@ -175,7 +177,6 @@ namespace Flow.Launcher.Plugin.Lively
 			livelyMonitorIndexes = wallpapers[wallpaper];
 			return livelyMonitorIndexes?.Any() == true;
 		}
-
 
 		public bool TryGetCommand(string query, out Command command) => commands.TryGetValue(query, out command);
 

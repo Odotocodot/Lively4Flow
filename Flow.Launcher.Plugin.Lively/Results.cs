@@ -15,12 +15,11 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			public static List<Result> RandomiseCommand(LivelyService livelyService)
 			{
-				var singleMonitor = livelyService.MonitorCount == 1 || !livelyService.IsArrangementPerMonitor();
 				var results = new List<Result>();
 				const string prefix = "Set a random wallpaper";
 				results.Add(new Result
 				{
-					Title = $"{prefix}{AppendAllMonitors(singleMonitor)}",
+					Title = $"{prefix}{AppendAllMonitors(livelyService.IsSingleDisplay)}",
 					Score = (livelyService.MonitorCount + 2) * ScoreMultiplier,
 					IcoPath = Icons.Random,
 					Action = _ =>
@@ -29,7 +28,7 @@ namespace Flow.Launcher.Plugin.Lively
 						return true;
 					}
 				});
-				if (singleMonitor)
+				if (livelyService.IsSingleDisplay)
 					return results;
 
 				livelyService.IterateMonitors(index =>
@@ -51,9 +50,7 @@ namespace Flow.Launcher.Plugin.Lively
 				var results = new List<Result>();
 				const string prefix = "Close active wallpaper";
 
-				if (livelyService.MonitorCount == 1
-				    || !livelyService.IsArrangementPerMonitor()
-				    || activeMonitors.Count > 1)
+				if (livelyService.IsSingleDisplay || activeMonitors.Count > 1)
 					results.Add(new Result
 					{
 						Title = $"{prefix}{AppendAllMonitors(activeMonitors.Count <= 1)}",
@@ -69,7 +66,7 @@ namespace Flow.Launcher.Plugin.Lively
 						}
 					});
 
-				if (!livelyService.IsArrangementPerMonitor())
+				if (livelyService.IsSingleDisplay)
 					return results;
 
 				results.AddRange(activeMonitors.Select(activeMonitor =>
@@ -224,7 +221,7 @@ namespace Flow.Launcher.Plugin.Lively
 				var score = 0;
 				if (livelyService.IsActiveWallpaper(wallpaper, out var monitorIndexes))
 				{
-					var offset = !IsArrangementPerMonitor(livelyService) || livelyService.MonitorCount == 1
+					var offset = livelyService.IsSingleDisplay
 						? $"{SelectedEmoji} | "
 						: $"{SelectedEmoji} {string.Join(", ", monitorIndexes)} | ";
 					title = OffsetTitle(title, offset, highlightData);
@@ -282,10 +279,6 @@ namespace Flow.Launcher.Plugin.Lively
 				return true;
 			}
 		};
-
-		private static bool IsArrangementPerMonitor(this LivelyService livelyService) =>
-			livelyService.WallpaperArrangement == WallpaperArrangement.Per;
-
 
 		public static List<Result> ToResultList<T>(this IEnumerable<T> source, LivelyService livelyService,
 			PluginInitContext context,
@@ -362,11 +355,9 @@ namespace Flow.Launcher.Plugin.Lively
 			//Setting Wallpapers
 			const string setPrefix = "Set as wallpaper";
 
-			var singleMonitor = livelyService.MonitorCount == 1 ||
-			                    !livelyService.IsArrangementPerMonitor();
 			results.Add(new Result
 			{
-				Title = $"{setPrefix}{AppendAllMonitors(singleMonitor)}",
+				Title = $"{setPrefix}{AppendAllMonitors(livelyService.IsSingleDisplay)}",
 				Score = (livelyService.MonitorCount + 2) * ScoreMultiplier,
 				IcoPath = Icons.Set,
 				Action = _ =>
@@ -376,7 +367,7 @@ namespace Flow.Launcher.Plugin.Lively
 				}
 			});
 
-			if (livelyService.IsArrangementPerMonitor())
+			if (!livelyService.IsSingleDisplay)
 				livelyService.IterateMonitors(index =>
 					results.Add(GetMonitorIndexResult(setPrefix,
 						Icons.Set,
@@ -389,7 +380,7 @@ namespace Flow.Launcher.Plugin.Lively
 			if (!livelyService.IsActiveWallpaper(wallpaper, out var activeIndexes))
 				return results;
 
-			if (singleMonitor || activeIndexes.Count > 1)
+			if (livelyService.IsSingleDisplay || activeIndexes.Count > 1)
 				results.Add(new Result
 				{
 					Title = $"{closePrefix}{AppendAllMonitors(activeIndexes.Count <= 1)}",
@@ -402,14 +393,16 @@ namespace Flow.Launcher.Plugin.Lively
 					}
 				});
 
-			if (livelyService.IsArrangementPerMonitor())
-				for (var i = 0; i < activeIndexes.Count; i++)
-					results.Add(GetMonitorIndexResult(closePrefix,
-						Icons.Close,
-						activeIndexes[i],
-						(livelyService.MonitorCount + 1) * ScoreMultiplier,
-						index => livelyService.Api.CloseWallpaper(index)));
+			if (livelyService.IsSingleDisplay)
+				return results;
 
+			results.AddRange(activeIndexes.Select(i =>
+				GetMonitorIndexResult(
+					closePrefix,
+					Icons.Close,
+					i,
+					(livelyService.MonitorCount + 1) * ScoreMultiplier,
+					index => livelyService.Api.CloseWallpaper(index))));
 			return results;
 		}
 	}
