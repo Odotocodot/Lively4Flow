@@ -43,6 +43,8 @@ namespace Flow.Launcher.Plugin.Lively.Models
 			FolderPath = folderPath;
 			IconPath = Path.Combine(folderPath, Path.GetFileName(Thumbnail));
 			PreviewPath = Path.Combine(folderPath, Path.GetFileName(Preview));
+			if (!File.Exists(PreviewPath))
+				PreviewPath = IconPath;
 
 			var partialPath = Path.GetDirectoryName(folderPath) switch
 			{
