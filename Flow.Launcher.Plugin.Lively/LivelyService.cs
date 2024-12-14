@@ -31,6 +31,12 @@ namespace Flow.Launcher.Plugin.Lively
 		public IReadOnlyDictionary<int, Wallpaper> ActiveMonitorIndexes => activeMonitorIndexes;
 		public LivelyCommandApi Api { get; }
 		public WallpaperArrangement WallpaperArrangement { get; private set; }
+
+		/// <summary>
+		/// This can be "incorrect" when using the MS store version. See <see cref="Wallpaper.LivelyFolderPath"/>
+		/// </summary>
+		private string WallpaperDirectory { get; set; }
+
 		public int MonitorCount { get; private set; }
 
 		public LivelyService(Settings settings, PluginInitContext context)
@@ -111,7 +117,7 @@ namespace Flow.Launcher.Plugin.Lively
 			for (var i = 0; i < currentWallpapers.Length; i++)
 			{
 				WallpaperLayout currentWallpaper = currentWallpapers[i];
-				if (GetFolderName(wallpaper.FolderPath) != GetFolderName(currentWallpaper.LivelyInfoPath))
+				if (wallpaper.LivelyFolderPath != currentWallpaper.LivelyInfoPath)
 					continue;
 				activeIndexes ??= new List<int>();
 				activeIndexes.Add(currentWallpaper.LivelyScreen.Index);
@@ -123,15 +129,13 @@ namespace Flow.Launcher.Plugin.Lively
 			//Context.API.LogInfo(nameof(LivelyService), "ADDED WALLPAPER TO DICT - " + wallpaperFolder);
 		}
 
-		private static string GetFolderName(string folderPath) =>
-			Path.GetFileName(Path.TrimEndingDirectorySeparator(folderPath));
-
 		private async ValueTask LoadLivelySettings(CancellationToken token)
 		{
 			await using var file = new FileStream(settings.LivelySettingsJsonPath, FileMode.Open, FileAccess.Read);
 			var livelySettings =
 				await JsonSerializer.DeserializeAsync<LivelySettings>(file, JsonSerializerOptions.Default, token);
 			WallpaperArrangement = livelySettings.WallpaperArrangement;
+			WallpaperDirectory = livelySettings.WallpaperDir;
 		}
 
 		private async ValueTask<WallpaperLayout[]> LoadCurrentWallpaper(CancellationToken token)
@@ -161,7 +165,7 @@ namespace Flow.Launcher.Plugin.Lively
 			await using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 			var wallpaper =
 				await JsonSerializer.DeserializeAsync<Wallpaper>(file, JsonSerializerOptions.Default, token);
-			wallpaper.Init(wallpaperFolder);
+			wallpaper.Init(wallpaperFolder, WallpaperDirectory);
 			//Context.API.LogInfo(nameof(LivelyService), "Finished Model:" + wallpaperFolder);
 			return wallpaper;
 		}

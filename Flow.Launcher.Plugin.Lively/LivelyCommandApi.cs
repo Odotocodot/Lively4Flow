@@ -21,11 +21,11 @@ namespace Flow.Launcher.Plugin.Lively
 			if (livelyService.WallpaperArrangement == WallpaperArrangement.Per)
 				livelyService.IterateMonitors(index => SetWallpaper(wallpaper, index));
 			else
-				InternalSetWallpaper(wallpaper.FolderPath, null);
+				InternalSetWallpaper(wallpaper.LivelyFolderPath, null);
 		}
 
 		public void SetWallpaper(Wallpaper wallpaper, int monitorIndex) =>
-			InternalSetWallpaper(wallpaper.FolderPath, monitorIndex);
+			InternalSetWallpaper(wallpaper.LivelyFolderPath, monitorIndex);
 
 		public void RandomiseWallpaper() => InternalSetWallpaper("random", null);
 		public void RandomiseWallpaper(int monitorIndex) => InternalSetWallpaper("random", monitorIndex);
