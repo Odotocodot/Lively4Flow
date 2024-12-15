@@ -2,6 +2,8 @@ namespace Flow.Launcher.Plugin.Lively
 {
 	public static class Constants
 	{
+		public const string PluginName = "LivelyWallpaperController";
+
 		public static class Files
 		{
 			public const string WallpaperLayout = "WallpaperLayout.json";

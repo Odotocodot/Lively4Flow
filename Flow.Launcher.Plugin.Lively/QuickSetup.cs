@@ -186,7 +186,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 		private static void Log(PluginInitContext context, string message, [CallerMemberName] string method = "")
 		{
-			context.API.LogInfo("LivelyWallpaperController." + nameof(QuickSetup), message, method);
+			context.API.LogInfo($"{Constants.PluginName}.{nameof(QuickSetup)}", message, method);
 		}
 	}
 }

@@ -58,7 +58,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 			canLoadData = false;
 
-			var currentWallpaperTask = LoadCurrentWallpaper(token);
+			var currentWallpaperTask = LoadActiveWallpapers(token);
 			ValueTask settingsTask = LoadLivelySettings(token);
 
 			var parallelOptions = new ParallelOptions
@@ -86,7 +86,7 @@ namespace Flow.Launcher.Plugin.Lively
 			}
 			catch (Exception e) when (e is FileNotFoundException or JsonException)
 			{
-				context.API.LogException("LivelyWallpaperController." + nameof(LivelyService),
+				context.API.LogException($"{Constants.PluginName}.{nameof(LivelyService)}",
 					$"Failed loading wallpaper at: \"{wallpaperFolder}\"",
 					e);
 				return;
@@ -117,10 +117,18 @@ namespace Flow.Launcher.Plugin.Lively
 			WallpaperDirectory = livelySettings.WallpaperDir;
 		}
 
-		private async ValueTask<WallpaperLayout[]> LoadCurrentWallpaper(CancellationToken token)
+		private async ValueTask<WallpaperLayout[]> LoadActiveWallpapers(CancellationToken token)
 		{
 			var path = Path.Combine(Path.GetDirectoryName(settings.LivelySettingsJsonPath),
 				Constants.Files.WallpaperLayout);
+
+			if (!File.Exists(path))
+			{
+				context.API.LogWarn($"{Constants.PluginName}.{nameof(LivelyService)}",
+					$"Could not find {Constants.Files.WallpaperLayout} file.");
+				return Array.Empty<WallpaperLayout>();
+			}
+
 			await using var file = new FileStream(path, FileMode.Open, FileAccess.Read);
 
 			var wallpaperLayout = await JsonSerializer.DeserializeAsync<WallpaperLayout[]>(file,
@@ -162,10 +170,7 @@ namespace Flow.Launcher.Plugin.Lively
 				action(i);
 		}
 
-		public void EnableLoading()
-		{
-			canLoadData = true;
-		}
+		public void EnableLoading() => canLoadData = true;
 
 		public void DisableLoading()
 		{
