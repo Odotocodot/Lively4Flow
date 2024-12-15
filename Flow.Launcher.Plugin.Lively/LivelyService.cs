@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -19,14 +18,11 @@ namespace Flow.Launcher.Plugin.Lively
 		private readonly Settings settings;
 		private readonly string localWallpapersPath;
 		private readonly string webWallpapersPath;
-		private readonly CommandCollection commands;
 		private readonly ConcurrentDictionary<Wallpaper, List<int>> wallpapers = new();
 		private readonly ConcurrentDictionary<int, Wallpaper> activeMonitorIndexes = new();
 
 		private bool canLoadData;
 		public bool IsLivelyRunning { get; private set; }
-
-		public IReadOnlyList<Command> Commands => commands;
 		public IEnumerable<Wallpaper> Wallpapers => wallpapers.Keys;
 		public IReadOnlyDictionary<int, Wallpaper> ActiveMonitorIndexes => activeMonitorIndexes;
 		public LivelyCommandApi Api { get; }
@@ -48,25 +44,6 @@ namespace Flow.Launcher.Plugin.Lively
 			localWallpapersPath = Path.Combine(settings.LivelyLibraryFolderPath, Constants.Folders.LocalWallpapers);
 			webWallpapersPath = Path.Combine(settings.LivelyLibraryFolderPath, Constants.Folders.WebWallpapers);
 			Api = new LivelyCommandApi(this, settings);
-
-			commands = new CommandCollection
-			{
-				new Command("setwp", "Search and set wallpapers", Constants.Icons.Set,
-					q => Wallpapers.ToResultList(this, context, q)),
-				new Command("random", "Set a random Wallpaper", Constants.Icons.Random,
-					_ => Results.For.RandomiseCommand(this)),
-				new Command("closewp", "Close a wallpaper", Constants.Icons.Close,
-					_ => Results.For.CloseCommand(this)),
-				new Command("volume", "Set the volume of a wallpaper", Constants.Icons.Volume,
-					q => Results.For.VolumeCommand(this, q)),
-				new Command("layout", "Change the wallpaper layout", Constants.Icons.Layout,
-					_ => Results.For.WallpaperArrangements(this)),
-				new Command("playback", "Pause or play wallpaper playback", Constants.Icons.Playback,
-					_ => Results.For.PlaybackCommand(this)),
-				//new Command("seek", "Set wallpaper playback position", null),
-				new Command("open", "Open or Show Lively", Constants.Icons.Open, Api.OpenLively),
-				new Command("quit", "Quit Lively", Constants.Icons.Quit, Api.QuitLively)
-			};
 		}
 
 		public async ValueTask Load(CancellationToken token)
@@ -178,8 +155,6 @@ namespace Flow.Launcher.Plugin.Lively
 			return livelyMonitorIndexes?.Any() == true;
 		}
 
-		public bool TryGetCommand(string query, out Command command) => commands.TryGetValue(query, out command);
-
 		//Lively monitor indexes are not zero indexed, hence this method for ease
 		public void IterateMonitors(Action<int> action)
 		{
@@ -197,11 +172,6 @@ namespace Flow.Launcher.Plugin.Lively
 			canLoadData = false;
 			wallpapers.Clear();
 			activeMonitorIndexes.Clear();
-		}
-
-		private class CommandCollection : KeyedCollection<string, Command>
-		{
-			protected override string GetKeyForItem(Command item) => item.Shortcut;
 		}
 	}
 }

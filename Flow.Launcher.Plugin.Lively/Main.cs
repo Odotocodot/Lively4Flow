@@ -14,6 +14,7 @@ namespace Flow.Launcher.Plugin.Lively
 		private PluginInitContext context;
 		private LivelyService livelyService;
 		private Settings settings;
+		private Commands commands;
 
 		public Task InitAsync(PluginInitContext context)
 		{
@@ -22,6 +23,7 @@ namespace Flow.Launcher.Plugin.Lively
 			settings = context.API.LoadSettingJsonStorage<Settings>();
 			QuickSetup.Run(settings, this.context);
 			livelyService = new LivelyService(settings, context);
+			commands = new Commands(livelyService, context);
 			return Task.CompletedTask;
 		}
 
@@ -55,18 +57,18 @@ namespace Flow.Launcher.Plugin.Lively
 			if (query.FirstSearch.StartsWith(Constants.Commands.Keyword))
 			{
 				if (query.FirstSearch.Length <= Constants.Commands.Keyword.Length)
-					return livelyService.Commands.ToResultList(livelyService, context);
+					return commands.ToResultList(livelyService, context);
 
 				var commandQuery = query.FirstSearch[1..].Trim();
 
-				if (livelyService.TryGetCommand(commandQuery, out Command command))
+				if (commands.TryGetCommand(commandQuery, out Command command))
 					return command.ResultGetter(query.SecondToEndSearch);
 
-				return livelyService.Commands.ToResultList(livelyService, context, commandQuery);
+				return commands.ToResultList(livelyService, context, commandQuery);
 			}
 
 			return livelyService.Wallpapers.Cast<ISearchable>()
-				.Concat(livelyService.Commands)
+				.Concat(commands)
 				.ToResultList(livelyService, context, query.Search);
 		}
 
