@@ -9,11 +9,20 @@ namespace Flow.Launcher.Plugin.Lively
 	{
 		private readonly LivelyService livelyService;
 		private readonly Settings settings;
+		private bool refreshUI;
 
 		public LivelyCommandApi(LivelyService livelyService, Settings settings)
 		{
 			this.livelyService = livelyService;
 			this.settings = settings;
+		}
+
+		public bool UIRefreshRequired()
+		{
+			if (!refreshUI)
+				return false;
+			refreshUI = false;
+			return true;
 		}
 
 		public void SetWallpaper(Wallpaper wallpaper)
@@ -30,34 +39,41 @@ namespace Flow.Launcher.Plugin.Lively
 		public void RandomiseWallpaper() => InternalSetWallpaper("random", null);
 		public void RandomiseWallpaper(int monitorIndex) => InternalSetWallpaper("random", monitorIndex);
 
-		public void SetVolume(int value) => RunCommand($"--volume {value}");
+		public void SetVolume(int value) => RunCommand($"--volume {value}", false);
 
 		public void SetWallpaperLayout(WallpaperArrangement arrangement) =>
-			RunCommand($"--layout {Enum.GetName(arrangement)!.ToLower()}");
+			RunCommand($"--layout {Enum.GetName(arrangement)!.ToLower()}", true);
 
-		public void WallpaperPlayback(bool playbackState) => RunCommand($"--play {playbackState}");
+		public void WallpaperPlayback(bool playbackState) => RunCommand($"--play {playbackState}", false);
 		public void CloseWallpaper(int monitorIndex) => InternalCloseWallpaper(monitorIndex);
 		public void CloseWallpaper() => InternalCloseWallpaper(-1);
 
-		public void OpenLively() => RunCommand("--showApp true");
-		public void QuitLively() => RunCommand("--shutdown true", false);
+		public void OpenLively() => RunCommand("--showApp true", false);
+		public void QuitLively() => RunCommand("--shutdown true", false, false);
 
 		private void InternalSetWallpaper(string wallpaperPath, int? monitorIndex)
 		{
 			var args = $"setwp --file \"{wallpaperPath}\"";
 			if (monitorIndex.HasValue)
 				args += $" --monitor {monitorIndex.Value}";
-			RunCommand(args);
+			RunCommand(args, true);
 		}
 
-		private void InternalCloseWallpaper(int monitorIndex) => RunCommand($"closewp --monitor {monitorIndex}", false);
+		private void InternalCloseWallpaper(int monitorIndex) =>
+			RunCommand($"closewp --monitor {monitorIndex}", true, false);
 
-		private void RunCommand(string args, bool autoOpenLively = true)
+
+		/// <param name="uiRefreshRequired">true if the command causes a changed that requires an UI update to be displayed</param>
+		private void RunCommand(string args, bool uiRefreshRequired, bool canOpenLively = true)
 		{
-			if (!livelyService.IsLivelyRunning && autoOpenLively)
+			if (!livelyService.IsLivelyRunning)
+			{
+				if (!canOpenLively)
+					return;
 				//TODO: Is a command queue needed or a lock?
 				//Maybe have a static bool field that will force a result with a progress bar saying Lively is loading?
 				StartLively();
+			}
 
 			ProcessStartInfo psi = settings.InstallType switch
 			{
@@ -78,6 +94,9 @@ namespace Flow.Launcher.Plugin.Lively
 			};
 
 			using Process process = Process.Start(psi);
+
+			if (uiRefreshRequired)
+				refreshUI = true;
 		}
 
 		private void StartLively()

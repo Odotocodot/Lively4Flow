@@ -15,6 +15,7 @@ namespace Flow.Launcher.Plugin.Lively
 		private LivelyService livelyService;
 		private Settings settings;
 		private Commands commands;
+		private Query lastQuery;
 
 		public Task InitAsync(PluginInitContext context)
 		{
@@ -35,16 +36,19 @@ namespace Flow.Launcher.Plugin.Lively
 			if (args.IsVisible)
 			{
 				livelyService.EnableLoading();
+				if (lastQuery?.ActionKeyword == context.CurrentPluginMetadata.ActionKeyword
+				    && livelyService.Api.UIRefreshRequired())
+					context.API.ReQuery();
 			}
 			else
 			{
 				livelyService.DisableLoading();
-				context.API.ReQuery();
 			}
 		}
 
 		public async Task<List<Result>> QueryAsync(Query query, CancellationToken token)
 		{
+			lastQuery = query;
 			await livelyService.Load(token);
 
 			if (string.IsNullOrWhiteSpace(query.Search))
