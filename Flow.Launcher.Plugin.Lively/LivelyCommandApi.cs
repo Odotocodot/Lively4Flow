@@ -28,7 +28,7 @@ namespace Flow.Launcher.Plugin.Lively
 		public void SetWallpaper(Wallpaper wallpaper)
 		{
 			if (livelyService.IsSingleDisplay)
-				InternalSetWallpaper(wallpaper.FolderPath, null);
+				InternalSetWallpaper(wallpaper.LivelyFolderPath, null);
 			else
 				livelyService.IterateMonitors(index => SetWallpaper(wallpaper, index));
 		}

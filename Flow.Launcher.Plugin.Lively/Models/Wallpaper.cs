@@ -38,11 +38,11 @@ namespace Flow.Launcher.Plugin.Lively.Models
 		public string IconPath { get; private set; }
 		public string PreviewPath { get; private set; }
 
-		public void Init(string folderPath, string livelyWallpaperDirectory)
+		public void Init(string folderPath, string livelyWallpaperFolder)
 		{
 			FolderPath = folderPath;
-			IconPath = Path.Combine(folderPath, Path.GetFileName(Thumbnail));
-			PreviewPath = Path.Combine(folderPath, Path.GetFileName(Preview));
+			IconPath = Path.Combine(folderPath, Path.GetFileName(Thumbnail) ?? string.Empty);
+			PreviewPath = Path.Combine(folderPath, Path.GetFileName(Preview) ?? string.Empty);
 			if (!File.Exists(PreviewPath))
 				PreviewPath = IconPath;
 
@@ -53,7 +53,7 @@ namespace Flow.Launcher.Plugin.Lively.Models
 				_ => throw new ArgumentException("Invalid wallpaper path")
 			};
 			var folderName = Path.GetFileName(Path.TrimEndingDirectorySeparator(folderPath));
-			LivelyFolderPath = Path.Combine(livelyWallpaperDirectory, partialPath, folderName);
+			LivelyFolderPath = Path.Combine(livelyWallpaperFolder, partialPath, folderName);
 		}
 
 		string ISearchable.SearchableString => Title;

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Flow.Launcher.Plugin.Lively.Models;
 using Flow.Launcher.Plugin.Lively.UI.Validation;
+using JetBrains.Annotations;
 
 namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 {
@@ -11,16 +12,15 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 		private readonly Settings settings;
 		private readonly PluginInitContext context;
 
-		//For DesignTime
+		[UsedImplicitly(Reason = "For design time WPF viewing")]
 		public SettingsViewModel()
 		{
 			settings = new Settings
 			{
 				LivelySettingsJsonPath = @"C:\Folder\Settings.json",
 				LivelyExePath = @"C:\Folder\Lively.exe",
-				LivelyLibraryFolderPath = @"C:\Folder\Library",
 				InstallType = LivelyInstallType.GitHub,
-				HasRunQuickSetup = true,
+				HasRunQuickSetup = true
 			};
 		}
 
@@ -30,19 +30,6 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			this.context = context;
 		}
 
-		[Required]
-		[LivelyLibraryFolderValidation]
-		public string LivelyLibraryFolder
-		{
-			get => settings.LivelyLibraryFolderPath;
-			set
-			{
-				settings.LivelyLibraryFolderPath = value;
-				OnPropertyChanged();
-				ValidateProperty(value);
-			}
-		}
-		
 		[Required]
 		[LivelySettingsFileValidation]
 		public string LivelySettingsFile

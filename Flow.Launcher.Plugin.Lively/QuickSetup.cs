@@ -50,9 +50,6 @@ namespace Flow.Launcher.Plugin.Lively
 			if (FindLivelySettings(context, baseStoragePath, out var settingsPath))
 				settings.LivelySettingsJsonPath = settingsPath;
 
-			if (FindLivelyLibraryFolder(context, baseStoragePath, out var libraryPath))
-				settings.LivelyLibraryFolderPath = libraryPath;
-
 			Log(context, "Finished quick setup");
 			settings.HasRunQuickSetup = true;
 		}
@@ -91,22 +88,6 @@ namespace Flow.Launcher.Plugin.Lively
 			}
 
 			Log(context, $"{Constants.Files.LivelySettings} was NOT found");
-			return false;
-		}
-
-		private static bool FindLivelyLibraryFolder(PluginInitContext context, string baseStoragePath,
-			out string libraryPath)
-		{
-			Log(context, "Looking for Lively Library Folder");
-			libraryPath = Path.Combine(baseStoragePath, Constants.Folders.DefaultLibraryName);
-			if (Directory.Exists(libraryPath) &&
-			    Directory.Exists(Path.Combine(libraryPath, Constants.Folders.LocalWallpapers)))
-			{
-				Log(context, $"Lively Library Folder was found at: \"{libraryPath}\"");
-				return true;
-			}
-
-			Log(context, "Lively Library Folder was NOT found");
 			return false;
 		}
 

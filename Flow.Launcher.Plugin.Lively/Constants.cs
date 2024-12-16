@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+
 namespace Flow.Launcher.Plugin.Lively
 {
 	public static class Constants
@@ -15,9 +18,15 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			public const string LocalWallpapers = "wallpapers";
 			public const string WebWallpapers = $"{SaveData}\\wptmp";
-			public const string WpData = $"{SaveData}\\wpdata";
-			public const string SaveData = "SaveData";
-			public const string DefaultLibraryName = "Library";
+			private const string SaveData = "SaveData";
+
+			public static string DefaultWallpaperFolder { get; } = Path.Combine(
+				Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+				"Lively Wallpaper", "Library");
+
+			public static string DefaultWallpaperFolderMSStore { get; } = Path.Combine(
+				Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+				"Packages", Lively.AppId, "LocalCache", "Local", "Lively Wallpaper", "Library");
 		}
 
 		public static class Commands

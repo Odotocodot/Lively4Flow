@@ -16,8 +16,14 @@ namespace Flow.Launcher.Plugin.Lively
 	{
 		private readonly PluginInitContext context;
 		private readonly Settings settings;
-		private readonly string localWallpapersPath;
-		private readonly string webWallpapersPath;
+
+		/// <summary>
+		/// Retrieved from Lively settings. This can be "incorrect" when using the MS store version. See <see cref="Wallpaper.LivelyFolderPath"/>
+		/// </summary>
+		private string livelyWallpaperFolder;
+
+		private string localWallpapersFolder;
+		private string webWallpapersFolder;
 		private readonly ConcurrentDictionary<Wallpaper, List<int>> wallpapers = new();
 		private readonly ConcurrentDictionary<int, Wallpaper> activeMonitorIndexes = new();
 
@@ -32,17 +38,10 @@ namespace Flow.Launcher.Plugin.Lively
 		/// <returns><see langword="true"/> if only there is only one place to display a wallpaper</returns>
 		public bool IsSingleDisplay => MonitorCount == 1 || WallpaperArrangement != WallpaperArrangement.Per;
 
-		/// <summary>
-		/// This can be "incorrect" when using the MS store version. See <see cref="Wallpaper.LivelyFolderPath"/>
-		/// </summary>
-		private string WallpaperDirectory { get; set; }
-
 		public LivelyService(Settings settings, PluginInitContext context)
 		{
 			this.settings = settings;
 			this.context = context;
-			localWallpapersPath = Path.Combine(settings.LivelyLibraryFolderPath, Constants.Folders.LocalWallpapers);
-			webWallpapersPath = Path.Combine(settings.LivelyLibraryFolderPath, Constants.Folders.WebWallpapers);
 			Api = new LivelyCommandApi(this, settings);
 		}
 
@@ -114,12 +113,26 @@ namespace Flow.Launcher.Plugin.Lively
 			var livelySettings =
 				await JsonSerializer.DeserializeAsync<LivelySettings>(file, JsonSerializerOptions.Default, token);
 			WallpaperArrangement = livelySettings.WallpaperArrangement;
-			WallpaperDirectory = livelySettings.WallpaperDir;
+			livelyWallpaperFolder = livelySettings.WallpaperDir;
+
+			if (settings.InstallType == LivelyInstallType.MicrosoftStore &&
+			    livelyWallpaperFolder == Constants.Folders.DefaultWallpaperFolder)
+			{
+				localWallpapersFolder = Path.Combine(Constants.Folders.DefaultWallpaperFolderMSStore,
+					Constants.Folders.LocalWallpapers);
+				webWallpapersFolder = Path.Combine(Constants.Folders.DefaultWallpaperFolderMSStore,
+					Constants.Folders.WebWallpapers);
+			}
+			else
+			{
+				localWallpapersFolder = Path.Combine(livelyWallpaperFolder, Constants.Folders.LocalWallpapers);
+				webWallpapersFolder = Path.Combine(livelyWallpaperFolder, Constants.Folders.WebWallpapers);
+			}
 		}
 
 		private async ValueTask<WallpaperLayout[]> LoadActiveWallpapers(CancellationToken token)
 		{
-			var path = Path.Combine(Path.GetDirectoryName(settings.LivelySettingsJsonPath),
+			var path = Path.Combine(Path.GetDirectoryName(settings.LivelySettingsJsonPath) ?? string.Empty,
 				Constants.Files.WallpaperLayout);
 
 			if (!File.Exists(path))
@@ -139,8 +152,8 @@ namespace Flow.Launcher.Plugin.Lively
 		}
 
 		private ParallelQuery<string> LoadWallpaperFolders(int degreeOfParallelism, CancellationToken token) =>
-			Directory.EnumerateDirectories(localWallpapersPath)
-				.Concat(Directory.EnumerateDirectories(webWallpapersPath))
+			Directory.EnumerateDirectories(localWallpapersFolder)
+				.Concat(Directory.EnumerateDirectories(webWallpapersFolder))
 				.AsParallel()
 				.WithCancellation(token)
 				.WithDegreeOfParallelism(degreeOfParallelism);
@@ -152,7 +165,7 @@ namespace Flow.Launcher.Plugin.Lively
 			await using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 			var wallpaper =
 				await JsonSerializer.DeserializeAsync<Wallpaper>(file, JsonSerializerOptions.Default, token);
-			wallpaper.Init(wallpaperFolder, WallpaperDirectory);
+			wallpaper.Init(wallpaperFolder, livelyWallpaperFolder);
 			//Context.API.LogInfo(nameof(LivelyService), "Finished Model:" + wallpaperFolder);
 			return wallpaper;
 		}
