@@ -184,10 +184,17 @@ namespace Flow.Launcher.Plugin.Lively
 							IcoPath = Icons.Layout,
 							Action = _ =>
 							{
-								//TODO: reapply the current wallpapers
+								if (arrangement == livelyService.WallpaperArrangement)
+									return false;
+
+								Wallpaper activeWallpaper = livelyService.ActiveMonitorIndexes
+									.DefaultIfEmpty()
+									.MinBy(x => x.Key)
+									.Value;
 								livelyService.Api.SetWallpaperLayout(arrangement);
-								// livelyService.Context.API.ChangeQuery(livelyService.Context.CurrentPluginMetadata
-								// 	.ActionKeyword);
+								//Task.Delay(500).Wait();
+								if (activeWallpaper != null)
+									livelyService.Api.SetWallpaper(activeWallpaper);
 								return true;
 							}
 						};
@@ -240,7 +247,6 @@ namespace Flow.Launcher.Plugin.Lively
 					Action = _ =>
 					{
 						livelyService.Api.SetWallpaper(wallpaper);
-						//livelyService.Context.API.ReQuery();
 						return true;
 					}
 				};
