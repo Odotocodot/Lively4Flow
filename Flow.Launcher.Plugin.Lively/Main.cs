@@ -51,6 +51,14 @@ namespace Flow.Launcher.Plugin.Lively
 			lastQuery = query;
 			await livelyService.Load(token);
 
+			var results = GetResults(query);
+			if (!livelyService.IsLivelyRunning)
+				results.Insert(0, Results.LivelyNotRunningResult(context));
+			return results;
+		}
+
+		private List<Result> GetResults(Query query)
+		{
 			if (string.IsNullOrWhiteSpace(query.Search))
 			{
 				var results = livelyService.Wallpapers.ToResultList(livelyService, context);

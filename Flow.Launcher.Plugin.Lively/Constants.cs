@@ -32,6 +32,7 @@ namespace Flow.Launcher.Plugin.Lively
 		public static class Commands
 		{
 			public const string Keyword = "!";
+			public const string Open = "open";
 		}
 
 		public static class Icons
@@ -45,6 +46,7 @@ namespace Flow.Launcher.Plugin.Lively
 			public const string Playback = Lively;
 			public const string Open = Lively;
 			public const string Quit = Lively;
+			public const string Warning = Lively;
 			public const string Lively = Base + "icon.png";
 		}
 

@@ -351,6 +351,26 @@ namespace Flow.Launcher.Plugin.Lively
 			};
 		}
 
+		public static Result LivelyNotRunningResult(PluginInitContext context)
+		{
+			var autoCompleteText =
+				$"{context.CurrentPluginMetadata.ActionKeyword} {Constants.Commands.Keyword}{Constants.Commands.Open}";
+			return new Result
+			{
+				Title = "Lively Wallpaper is not running",
+				SubTitle =
+					$"The plugin may not function properly. Please '!{Constants.Commands.Open}' Lively Wallpaper",
+				Score = 200 * ScoreMultiplier,
+				IcoPath = Icons.Warning,
+				AutoCompleteText = autoCompleteText,
+				Action = _ =>
+				{
+					context.API.ChangeQuery(autoCompleteText);
+					return false;
+				}
+			};
+		}
+
 		public static List<Result> ContextMenu(Result selectedResult, LivelyService livelyService)
 		{
 			if (selectedResult.ContextData is not Wallpaper wallpaper)
