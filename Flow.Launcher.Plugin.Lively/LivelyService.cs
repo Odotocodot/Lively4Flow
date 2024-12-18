@@ -42,13 +42,13 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			this.settings = settings;
 			this.context = context;
-			Api = new LivelyCommandApi(this, settings);
+			Api = new LivelyCommandApi(this);
 		}
 
 		public async ValueTask Load(CancellationToken token)
 		{
 			IsLivelyRunning = Process.GetProcessesByName("Lively")
-				.FirstOrDefault(p => p.MainModule?.FileName.StartsWith(settings.LivelyExePath) == true) != null;
+				.Any(p => p.MainModule?.FileName.EndsWith("Lively.exe") == true);
 
 			MonitorCount = Screen.AllScreens.Length;
 

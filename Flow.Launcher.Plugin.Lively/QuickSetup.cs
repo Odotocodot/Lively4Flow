@@ -45,8 +45,6 @@ namespace Flow.Launcher.Plugin.Lively
 					return;
 			}
 
-			settings.LivelyExePath = exePath;
-
 			if (FindLivelySettings(context, baseStoragePath, out var settingsPath))
 				settings.LivelySettingsJsonPath = settingsPath;
 

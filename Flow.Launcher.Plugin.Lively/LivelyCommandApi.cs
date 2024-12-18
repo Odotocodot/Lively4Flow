@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Flow.Launcher.Plugin.Lively.Models;
 
 namespace Flow.Launcher.Plugin.Lively
@@ -8,21 +7,18 @@ namespace Flow.Launcher.Plugin.Lively
 	public class LivelyCommandApi
 	{
 		private readonly LivelyService livelyService;
-		private readonly Settings settings;
 		private bool refreshUI;
 
-		public LivelyCommandApi(LivelyService livelyService, Settings settings)
+		public LivelyCommandApi(LivelyService livelyService)
 		{
 			this.livelyService = livelyService;
-			this.settings = settings;
 		}
 
 		public bool UIRefreshRequired()
 		{
-			if (!refreshUI)
-				return false;
+			var result = refreshUI;
 			refreshUI = false;
-			return true;
+			return result;
 		}
 
 		public void SetWallpaper(Wallpaper wallpaper)
@@ -49,7 +45,7 @@ namespace Flow.Launcher.Plugin.Lively
 		public void CloseWallpaper() => InternalCloseWallpaper(-1);
 
 		public void OpenLively() => RunCommand("--showApp true", false);
-		public void QuitLively() => RunCommand("--shutdown true", false, false);
+		public void QuitLively() => RunCommand("--shutdown true", false);
 
 		private void InternalSetWallpaper(string wallpaperPath, int? monitorIndex)
 		{
@@ -60,60 +56,18 @@ namespace Flow.Launcher.Plugin.Lively
 		}
 
 		private void InternalCloseWallpaper(int monitorIndex) =>
-			RunCommand($"closewp --monitor {monitorIndex}", true, false);
-
+			RunCommand($"closewp --monitor {monitorIndex}", true);
 
 		/// <param name="uiRefreshRequired">true if the command causes a changed that requires an UI update to be displayed</param>
-		private void RunCommand(string args, bool uiRefreshRequired, bool canOpenLively = true)
+		private void RunCommand(string args, bool uiRefreshRequired)
 		{
-			if (!livelyService.IsLivelyRunning)
-			{
-				if (!canOpenLively)
-					return;
-				//TODO: Is a command queue needed or a lock?
-				//Maybe have a static bool field that will force a result with a progress bar saying Lively is loading?
-				StartLively();
-			}
-
-			// ProcessStartInfo psi = settings.InstallType switch
-			// {
-			// 	LivelyInstallType.GitHub => new ProcessStartInfo
-			// 	{
-			// 		FileName = settings.LivelyExePath,
-			// 		Arguments = args,
-			// 		CreateNoWindow = true
-			// 	},
-			// 	LivelyInstallType.MicrosoftStore => new ProcessStartInfo
-			// 	{
-			// 		UseShellExecute = true,
-			// 		FileName = $"shell:AppsFolder\\{Constants.Lively.AppId}!App",
-			// 		Arguments = args
-			// 	},
-			// 	LivelyInstallType.None => throw new InvalidOperationException("Lively Wallpaper is not installed!"),
-			// 	_ => throw new InvalidCastException("Invalid InstallType")
-			// };
-
+			// if (!livelyService.IsLivelyRunning)
+			// 	return;
 			var psi = new ProcessStartInfo(Constants.CommandUtility, args);
 			using Process process = Process.Start(psi);
 
 			if (uiRefreshRequired)
 				refreshUI = true;
-		}
-
-		private void StartLively()
-		{
-			ProcessStartInfo livelyProcessStartInfo = settings.InstallType switch
-			{
-				LivelyInstallType.GitHub => new ProcessStartInfo(settings.LivelyExePath),
-				LivelyInstallType.MicrosoftStore => new ProcessStartInfo("explorer.exe",
-					$"shell:AppsFolder\\{Constants.Lively.AppId}!App"),
-				LivelyInstallType.None => throw new InvalidOperationException("Lively Wallpaper is not installed!"),
-				_ => throw new InvalidCastException("Invalid InstallType")
-			};
-			livelyProcessStartInfo.CreateNoWindow = true;
-			using Process process = Process.Start(livelyProcessStartInfo);
-			process?.WaitForInputIdle(5000);
-			Task.Delay(1000);
 		}
 	}
 }

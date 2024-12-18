@@ -18,7 +18,6 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			settings = new Settings
 			{
 				LivelySettingsJsonPath = @"C:\Folder\Settings.json",
-				LivelyExePath = @"C:\Folder\Lively.exe",
 				InstallType = LivelyInstallType.GitHub,
 				HasRunQuickSetup = true
 			};
@@ -43,17 +42,6 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			}
 		}
 
-		[Required]
-		[LivelyExePathValidation]
-		public string LivelyExePath
-		{
-			get => settings.LivelyExePath;
-			set
-			{
-				settings.LivelyExePath = value;
-				OnPropertyChanged();
-			}
-		}
 
 		[EnumDataType(typeof(LivelyInstallType))]
 		public LivelyInstallType LivelyInstallType
