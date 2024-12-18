@@ -1,11 +1,15 @@
 using System;
 using System.IO;
+using System.Reflection;
 
 namespace Flow.Launcher.Plugin.Lively
 {
 	public static class Constants
 	{
 		public const string PluginName = "LivelyWallpaperController";
+		public static string CommandUtility { get; } = Path.Combine(
+			Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
+			"LivelyCommandUtility","Livelycu.exe");
 
 		public static class Files
 		{

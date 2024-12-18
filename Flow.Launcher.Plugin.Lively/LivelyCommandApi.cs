@@ -75,24 +75,25 @@ namespace Flow.Launcher.Plugin.Lively
 				StartLively();
 			}
 
-			ProcessStartInfo psi = settings.InstallType switch
-			{
-				LivelyInstallType.GitHub => new ProcessStartInfo
-				{
-					FileName = settings.LivelyExePath,
-					Arguments = args,
-					CreateNoWindow = true
-				},
-				LivelyInstallType.MicrosoftStore => new ProcessStartInfo
-				{
-					UseShellExecute = true,
-					FileName = $"shell:AppsFolder\\{Constants.Lively.AppId}!App",
-					Arguments = args
-				},
-				LivelyInstallType.None => throw new InvalidOperationException("Lively Wallpaper is not installed!"),
-				_ => throw new InvalidCastException("Invalid InstallType")
-			};
+			// ProcessStartInfo psi = settings.InstallType switch
+			// {
+			// 	LivelyInstallType.GitHub => new ProcessStartInfo
+			// 	{
+			// 		FileName = settings.LivelyExePath,
+			// 		Arguments = args,
+			// 		CreateNoWindow = true
+			// 	},
+			// 	LivelyInstallType.MicrosoftStore => new ProcessStartInfo
+			// 	{
+			// 		UseShellExecute = true,
+			// 		FileName = $"shell:AppsFolder\\{Constants.Lively.AppId}!App",
+			// 		Arguments = args
+			// 	},
+			// 	LivelyInstallType.None => throw new InvalidOperationException("Lively Wallpaper is not installed!"),
+			// 	_ => throw new InvalidCastException("Invalid InstallType")
+			// };
 
+			var psi = new ProcessStartInfo(Constants.CommandUtility, args);
 			using Process process = Process.Start(psi);
 
 			if (uiRefreshRequired)
