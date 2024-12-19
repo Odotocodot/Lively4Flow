@@ -53,7 +53,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 			var results = GetResults(query);
 			if (!livelyService.IsLivelyRunning)
-				results.Insert(0, Results.LivelyNotRunningResult(context));
+				results.Insert(0, Results.LivelyNotRunningResult());
 			return results;
 		}
 

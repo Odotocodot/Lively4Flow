@@ -63,7 +63,7 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			// if (!livelyService.IsLivelyRunning)
 			// 	return;
-			var psi = new ProcessStartInfo(Constants.CommandUtility, args);
+			var psi = new ProcessStartInfo(Constants.CommandUtility, args) { CreateNoWindow = true };
 			using Process process = Process.Start(psi);
 
 			if (uiRefreshRequired)
