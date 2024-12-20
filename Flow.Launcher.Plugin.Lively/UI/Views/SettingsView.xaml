@@ -13,7 +13,6 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <BooleanToVisibilityConverter x:Key="BoolToVis" />
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Flow.Launcher.Plugin.Lively;component/UI/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
@@ -22,32 +21,17 @@
 
 
     <StackPanel Margin="25,0,25,25">
-        <!--#region Lively Library Folder icons-->
+        <!--#region Lively Settings File-->
         <Border CornerRadius="0,0,0,0" Style="{DynamicResource SettingGroupBox}">
-            <ItemsControl Style="{StaticResource SettingGrid}">
-                <StackPanel Style="{StaticResource TextPanel}">
-                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Lively library folder" />
-                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}"
-                               Text="A description with example &quot;&quot;" />
-                </StackPanel>
-                <TextBox
-                    Grid.Column="2"
-                    Margin="0,4,18,4"
-                    Text="{Binding LivelyLibraryFolder}" />
-            </ItemsControl>
-        </Border>
-        <!--#endregion-->
-
-        <!--#region Lively Settings File icons-->
-        <Border Style="{DynamicResource SettingGroupBox}">
             <ItemsControl Style="{StaticResource SettingGrid}">
                 <StackPanel Style="{StaticResource TextPanel}">
                     <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Lively settings file" />
                     <TextBlock Style="{DynamicResource SettingSubTitleLabel}"
-                               Text="A description with example &quot;&quot;" />
+                               Text="The Lively settings file, usually found here. link to readme" />
                 </StackPanel>
                 <TextBox
                     Grid.Column="2"
+                    MinWidth="50"
                     Margin="0,4,18,4"
                     Text="{Binding LivelySettingsFile}" />
             </ItemsControl>
@@ -62,30 +46,13 @@
                 </StackPanel>
                 <ComboBox
                     Grid.Column="2"
+                    ItemsSource="{Binding InstallTypes}"
+                    SelectedValue="{Binding LivelyInstallType, Mode=OneWayToSource}"
+                    SelectedValuePath="InstallType"
+                    DisplayMemberPath="Name"
                     Width="160"
                     Margin="10,0,18,0"
-                    HorizontalContentAlignment="Center">
-                    <ComboBoxItem Content="None" IsEnabled="False" />
-                    <ComboBoxItem Content="GitHub" />
-                    <ComboBoxItem Content="Microsoft Store" />
-                </ComboBox>
-            </ItemsControl>
-        </Border>
-        <!--#endregion-->
-
-        <!--#region Lively Exe Path pages-->
-        <Border Style="{DynamicResource SettingGroupBox}"
-                Visibility="{Binding ExeVisibility, Converter={StaticResource BoolToVis}}">
-            <ItemsControl Style="{StaticResource SettingGrid}">
-                <StackPanel Style="{StaticResource TextPanel}">
-                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Lively exe" />
-                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}"
-                               Text="A description with example &quot;&quot;" />
-                </StackPanel>
-                <TextBox
-                    Grid.Column="2"
-                    Margin="0,4,18,4"
-                    Text="{Binding LivelyExePath}" />
+                    HorizontalContentAlignment="Center" />
             </ItemsControl>
         </Border>
         <!--#endregion-->
@@ -96,13 +63,21 @@
                 <StackPanel Style="{StaticResource TextPanel}">
                     <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Quick setup" />
                     <TextBlock Style="{DynamicResource SettingSubTitleLabel}"
-                               Text="A description with example &quot;&quot;" />
+                               Text="Automatically attempt to setup up the plugin" />
                 </StackPanel>
-                <Button
-                    Grid.Column="2"
-                    Margin="0,4,18,4"
-                    Content="Run"
-                    Style="{StaticResource SettingButton}" />
+                <StackPanel Orientation="Horizontal"
+                            Grid.Column="2">
+                    <Button
+                        Margin="0,4,4,4"
+                        Content="Revert"
+                        Command="{Binding RevertCommand}"
+                        Style="{StaticResource SettingButton}" />
+                    <Button
+                        Margin="0,4,18,4"
+                        Content="Run"
+                        Command="{Binding RunQuickSetupCommand}"
+                        Style="{StaticResource SettingButton}" />
+                </StackPanel>
             </ItemsControl>
         </Border>
         <!--#endregion-->

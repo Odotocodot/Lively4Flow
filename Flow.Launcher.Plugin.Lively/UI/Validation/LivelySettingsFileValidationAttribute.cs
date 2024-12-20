@@ -8,8 +8,14 @@ namespace Flow.Launcher.Plugin.Lively.UI.Validation
 		protected override ValidationResult IsValid(object value, ValidationContext validationContext)
 		{
 			var settingsPath = (string)value;
-			return File.Exists(settingsPath)
-			       && Path.GetFileName(settingsPath) == Constants.Files.LivelySettings
+
+			var exists = File.Exists(settingsPath)
+			             && Path.GetFileName(settingsPath) == Constants.Files.LivelySettings
+			             && File.Exists(Path.Combine(
+				             Path.GetDirectoryName(settingsPath) ?? string.Empty,
+				             Constants.Files.WallpaperLayout));
+
+			return exists
 				? ValidationResult.Success
 				: new ValidationResult("Invalid settings file path");
 		}

@@ -9,15 +9,9 @@ namespace Flow.Launcher.Plugin.Lively
 {
 	public static class QuickSetup
 	{
-		public static void ForceRun(Settings settings, PluginInitContext context)
+		public static void Run(Settings settings, PluginInitContext context, bool forceRun = false)
 		{
-			settings.HasRunQuickSetup = false;
-			Run(settings, context);
-		}
-
-		public static void Run(Settings settings, PluginInitContext context)
-		{
-			if (settings.InstallType != LivelyInstallType.None || settings.HasRunQuickSetup)
+			if (!forceRun && (settings.InstallType != LivelyInstallType.None || settings.HasRunQuickSetup))
 				return;
 			Log(context, "Starting Setup");
 

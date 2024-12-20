@@ -12,6 +12,8 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 		private readonly Settings settings;
 		private readonly PluginInitContext context;
 
+		private Settings oldSettings;
+
 		[UsedImplicitly(Reason = "For design time WPF viewing")]
 		public SettingsViewModel()
 		{
@@ -43,7 +45,6 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 		}
 
 
-		[EnumDataType(typeof(LivelyInstallType))]
 		public LivelyInstallType LivelyInstallType
 		{
 			get => settings.InstallType;
@@ -51,18 +52,41 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			{
 				settings.InstallType = value;
 				OnPropertyChanged();
-				OnPropertyChanged(nameof(ExeVisibility));
-				ValidateProperty(value);
 			}
 		}
 
-		public bool ExeVisibility => LivelyInstallType == LivelyInstallType.GitHub;
+		public LivelyInstallTypeViewModel[] InstallTypes { get; } =
+		{
+			new(LivelyInstallType.None, "Not Installed", false),
+			new(LivelyInstallType.GitHub, "GitHub", true),
+			new(LivelyInstallType.MicrosoftStore, "Microsoft Store", true)
+		};
+
+
+		public bool CanRevert => oldSettings != null
+		                         && (settings.InstallType != oldSettings.InstallType
+		                             || settings.LivelySettingsJsonPath != oldSettings.LivelySettingsJsonPath);
+
 
 		[RelayCommand]
-		private void QuickSetup()
+		private void RunQuickSetup()
 		{
-			Lively.QuickSetup.ForceRun(settings, context);
-			//TODO: Notify properties have changed
+			oldSettings = settings with { HasRunQuickSetup = false };
+			QuickSetup.Run(settings, context, true);
+			OnPropertyChanged(nameof(LivelySettingsFile));
+			OnPropertyChanged(nameof(LivelyInstallType));
+			OnPropertyChanged(nameof(CanRevert));
+		}
+
+		[RelayCommand(CanExecute = nameof(CanRevert))]
+		private void Revert()
+		{
+			settings.LivelySettingsJsonPath = oldSettings.LivelySettingsJsonPath;
+			settings.InstallType = oldSettings.InstallType;
+			oldSettings = null;
+			OnPropertyChanged(nameof(LivelySettingsFile));
+			OnPropertyChanged(nameof(LivelyInstallType));
+			OnPropertyChanged(nameof(CanRevert));
 		}
 	}
 }
