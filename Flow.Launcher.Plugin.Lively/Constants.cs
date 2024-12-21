@@ -7,9 +7,10 @@ namespace Flow.Launcher.Plugin.Lively
 	public static class Constants
 	{
 		public const string PluginName = "LivelyWallpaperController";
+
 		public static string CommandUtility { get; } = Path.Combine(
 			Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
-			"LivelyCommandUtility","Livelycu.exe");
+			"LivelyCommandUtility", "Livelycu.exe");
 
 		public static class Files
 		{
@@ -20,9 +21,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 		public static class Folders
 		{
-			public const string LocalWallpapers = "wallpapers";
-			public const string WebWallpapers = $"{SaveData}\\wptmp";
-			private const string SaveData = "SaveData";
+			public static string[] Wallpapers { get; } = { "wallpapers", Path.Combine("SaveData", "wptmp") };
 
 			public static string DefaultWallpaperFolder { get; } = Path.Combine(
 				Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),

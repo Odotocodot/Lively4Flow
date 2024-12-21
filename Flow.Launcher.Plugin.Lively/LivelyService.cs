@@ -17,13 +17,6 @@ namespace Flow.Launcher.Plugin.Lively
 		private readonly PluginInitContext context;
 		private readonly Settings settings;
 
-		/// <summary>
-		/// Retrieved from Lively settings. This can be "incorrect" when using the MS store version. See <see cref="Wallpaper.LivelyFolderPath"/>
-		/// </summary>
-		private string livelyWallpaperFolder;
-
-		private string localWallpapersFolder;
-		private string webWallpapersFolder;
 		private readonly ConcurrentDictionary<Wallpaper, List<int>> wallpapers = new();
 		private readonly ConcurrentDictionary<int, Wallpaper> activeMonitorIndexes = new();
 
@@ -59,22 +52,25 @@ namespace Flow.Launcher.Plugin.Lively
 			canLoadData = false;
 
 			var currentWallpaperTask = LoadActiveWallpapers(token);
-			ValueTask settingsTask = LoadLivelySettings(token);
+
+			if (settings.HasErrors)
+				return;
+			var (livelyWallpaperLibrary, wallpaperFolders) = await LoadLivelySettings(token);
 
 			var parallelOptions = new ParallelOptions
 			{
 				MaxDegreeOfParallelism = 8,
 				CancellationToken = token
 			};
-			await settingsTask;
 			await Parallel.ForEachAsync(
-				LoadWallpaperFolders(parallelOptions.MaxDegreeOfParallelism, token),
+				LoadWallpaperFolders(wallpaperFolders, parallelOptions.MaxDegreeOfParallelism, token),
 				parallelOptions,
-				async (wallpaperFolder, t) => await LoadAllWallpapers(wallpaperFolder, await currentWallpaperTask, t));
+				async (wallpaperFolder, t) => await LoadAllWallpapers(livelyWallpaperLibrary, wallpaperFolder,
+					await currentWallpaperTask, t));
 		}
 
-		private async ValueTask LoadAllWallpapers(string wallpaperFolder, WallpaperLayout[] currentWallpapers,
-			CancellationToken token)
+		private async ValueTask LoadAllWallpapers(string livelyWallpaperLibrary, string wallpaperFolder,
+			WallpaperLayout[] currentWallpapers, CancellationToken token)
 		{
 			if (token.IsCancellationRequested)
 				return;
@@ -82,7 +78,7 @@ namespace Flow.Launcher.Plugin.Lively
 			Wallpaper wallpaper;
 			try
 			{
-				wallpaper = await LoadWallpaper(wallpaperFolder, token);
+				wallpaper = await LoadWallpaper(livelyWallpaperLibrary, wallpaperFolder, token);
 			}
 			catch (Exception e) when (e is FileNotFoundException or JsonException)
 			{
@@ -108,37 +104,19 @@ namespace Flow.Launcher.Plugin.Lively
 			//Context.API.LogInfo(nameof(LivelyService), "ADDED WALLPAPER TO DICT - " + wallpaperFolder);
 		}
 
-		private async ValueTask LoadLivelySettings(CancellationToken token)
+		private async ValueTask<(string, IEnumerable<string>)> LoadLivelySettings(CancellationToken token)
 		{
-			if (!File.Exists(settings.LivelySettingsJsonPath))
-				// Errors.Add(
-				// 	"Could not find the wallpapers directory from Lively. Please set the correct setting.json file type in the plugin settings.");
-				return;
-
 			await using var file = new FileStream(settings.LivelySettingsJsonPath, FileMode.Open, FileAccess.Read);
 			var livelySettings =
 				await JsonSerializer.DeserializeAsync<LivelySettings>(file, JsonSerializerOptions.Default, token);
 			WallpaperArrangement = livelySettings.WallpaperArrangement;
-			livelyWallpaperFolder = livelySettings.WallpaperDir;
 
-			if (settings.InstallType == LivelyInstallType.MicrosoftStore &&
-			    livelyWallpaperFolder == Constants.Folders.DefaultWallpaperFolder)
-			{
-				localWallpapersFolder = Path.Combine(Constants.Folders.DefaultWallpaperFolderMSStore,
-					Constants.Folders.LocalWallpapers);
-				webWallpapersFolder = Path.Combine(Constants.Folders.DefaultWallpaperFolderMSStore,
-					Constants.Folders.WebWallpapers);
-			}
-			else
-			{
-				localWallpapersFolder = Path.Combine(livelyWallpaperFolder, Constants.Folders.LocalWallpapers);
-				webWallpapersFolder = Path.Combine(livelyWallpaperFolder, Constants.Folders.WebWallpapers);
-			}
+			var prefix = settings.InstallType == LivelyInstallType.MicrosoftStore &&
+			             livelySettings.WallpaperDir == Constants.Folders.DefaultWallpaperFolder
+				? Constants.Folders.DefaultWallpaperFolderMSStore
+				: livelySettings.WallpaperDir;
 
-			Errors.Clear();
-			if (!Directory.Exists(localWallpapersFolder) || !Directory.Exists(webWallpapersFolder))
-				Errors.Add(
-					"Could not find the wallpapers directory from Lively. Please set the correct install type in the plugin settings.");
+			return (livelySettings.WallpaperDir, Constants.Folders.Wallpapers.Select(dir => Path.Combine(prefix, dir)));
 		}
 
 		private async ValueTask<WallpaperLayout[]> LoadActiveWallpapers(CancellationToken token)
@@ -162,21 +140,22 @@ namespace Flow.Launcher.Plugin.Lively
 			return wallpaperLayout;
 		}
 
-		private ParallelQuery<string> LoadWallpaperFolders(int degreeOfParallelism, CancellationToken token) =>
-			Directory.EnumerateDirectories(localWallpapersFolder)
-				.Concat(Directory.EnumerateDirectories(webWallpapersFolder))
+		private static ParallelQuery<string> LoadWallpaperFolders(IEnumerable<string> wallpaperFolders,
+			int degreeOfParallelism, CancellationToken token) =>
+			wallpaperFolders.SelectMany(Directory.EnumerateDirectories)
 				.AsParallel()
 				.WithCancellation(token)
 				.WithDegreeOfParallelism(degreeOfParallelism);
 
-		private async ValueTask<Wallpaper> LoadWallpaper(string wallpaperFolder, CancellationToken token)
+		private static async ValueTask<Wallpaper> LoadWallpaper(string livelyWallpaperLibrary, string wallpaperFolder,
+			CancellationToken token)
 		{
 			//Context.API.LogInfo(nameof(LivelyService), "Creating Model:" + wallpaperFolder);
 			var path = Path.Combine(wallpaperFolder, Constants.Files.LivelyInfo);
 			await using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 			var wallpaper =
 				await JsonSerializer.DeserializeAsync<Wallpaper>(file, JsonSerializerOptions.Default, token);
-			wallpaper.Init(wallpaperFolder, livelyWallpaperFolder);
+			wallpaper.Init(wallpaperFolder, livelyWallpaperLibrary);
 			//Context.API.LogInfo(nameof(LivelyService), "Finished Model:" + wallpaperFolder);
 			return wallpaper;
 		}

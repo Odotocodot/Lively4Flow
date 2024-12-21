@@ -9,5 +9,6 @@ namespace Flow.Launcher.Plugin.Lively.Models
 		public LivelyInstallType InstallType { get; set; }
 		public bool HasRunQuickSetup { get; set; }
 		[JsonIgnore] public List<string> Errors { get; } = new();
+		[JsonIgnore] public bool HasErrors => Errors.Count > 0;
 	}
 }

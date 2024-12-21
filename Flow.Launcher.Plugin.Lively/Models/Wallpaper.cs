@@ -1,5 +1,5 @@
-using System;
 using System.IO;
+using System.Linq;
 
 namespace Flow.Launcher.Plugin.Lively.Models
 {
@@ -46,14 +46,10 @@ namespace Flow.Launcher.Plugin.Lively.Models
 			if (!File.Exists(PreviewPath))
 				PreviewPath = IconPath;
 
-			var partialPath = Path.GetDirectoryName(folderPath) switch
-			{
-				string path when path.EndsWith(Constants.Folders.LocalWallpapers) => Constants.Folders.LocalWallpapers,
-				string path when path.EndsWith(Constants.Folders.WebWallpapers) => Constants.Folders.WebWallpapers,
-				_ => throw new ArgumentException("Invalid wallpaper path")
-			};
-			var folderName = Path.GetFileName(Path.TrimEndingDirectorySeparator(folderPath));
-			LivelyFolderPath = Path.Combine(livelyWallpaperFolder, partialPath, folderName);
+			LivelyFolderPath = Path.Combine(
+				livelyWallpaperFolder,
+				Constants.Folders.Wallpapers.Single(dir => Path.GetDirectoryName(folderPath)?.EndsWith(dir) == true),
+				Path.GetFileName(Path.TrimEndingDirectorySeparator(folderPath)));
 		}
 
 		string ISearchable.SearchableString => Title;
