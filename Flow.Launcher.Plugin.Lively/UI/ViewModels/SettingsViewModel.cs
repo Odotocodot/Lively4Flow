@@ -1,13 +1,13 @@
-using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Flow.Launcher.Plugin.Lively.Models;
-using Flow.Launcher.Plugin.Lively.UI.Validation;
 using JetBrains.Annotations;
 
 namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 {
-	public partial class SettingsViewModel : ObservableValidator
+	public partial class SettingsViewModel : ObservableObject
 	{
 		private readonly Settings settings;
 		private readonly PluginInitContext context;
@@ -29,10 +29,24 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 		{
 			this.settings = settings;
 			this.context = context;
+			PropertyChanged += ValidateSettings;
 		}
 
-		[Required]
-		[LivelySettingsFileValidation]
+		private void ValidateSettings(object sender, PropertyChangedEventArgs e)
+		{
+			var settingsPath = settings.LivelySettingsJsonPath;
+
+			settings.Errors.Clear();
+			if (settings.InstallType == LivelyInstallType.None)
+				settings.Errors.Add("Lively is not installed!");
+
+			if (!(File.Exists(settingsPath) && Path.GetFileName(settingsPath) == Constants.Files.LivelySettings
+			                                && File.Exists(Path.Combine(
+				                                Path.GetDirectoryName(settingsPath) ?? string.Empty,
+				                                Constants.Files.WallpaperLayout))))
+				settings.Errors.Add("Could not find Lively settings file. Please update the plugin settings");
+		}
+
 		public string LivelySettingsFile
 		{
 			get => settings.LivelySettingsJsonPath;
@@ -40,7 +54,6 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			{
 				settings.LivelySettingsJsonPath = value;
 				OnPropertyChanged();
-				ValidateProperty(value);
 			}
 		}
 
@@ -57,15 +70,15 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 
 		public LivelyInstallTypeViewModel[] InstallTypes { get; } =
 		{
-			new(LivelyInstallType.None, "Not Installed", false),
-			new(LivelyInstallType.GitHub, "GitHub", true),
-			new(LivelyInstallType.MicrosoftStore, "Microsoft Store", true)
+			new(LivelyInstallType.None, "Not Installed"),
+			new(LivelyInstallType.GitHub, "GitHub"),
+			new(LivelyInstallType.MicrosoftStore, "Microsoft Store")
 		};
 
 
-		public bool CanRevert => oldSettings != null
-		                         && (settings.InstallType != oldSettings.InstallType
-		                             || settings.LivelySettingsJsonPath != oldSettings.LivelySettingsJsonPath);
+		public bool CanRevert => oldSettings != null && (settings.InstallType != oldSettings.InstallType
+		                                                 || settings.LivelySettingsJsonPath !=
+		                                                 oldSettings.LivelySettingsJsonPath);
 
 
 		[RelayCommand]

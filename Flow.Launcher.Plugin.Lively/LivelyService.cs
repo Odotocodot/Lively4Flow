@@ -12,7 +12,7 @@ using Screen = System.Windows.Forms.Screen;
 
 namespace Flow.Launcher.Plugin.Lively
 {
-	public class LivelyService
+	public class LivelyService : IErrorInfo
 	{
 		private readonly PluginInitContext context;
 		private readonly Settings settings;
@@ -28,6 +28,7 @@ namespace Flow.Launcher.Plugin.Lively
 		private readonly ConcurrentDictionary<int, Wallpaper> activeMonitorIndexes = new();
 
 		private bool canLoadData;
+		public List<string> Errors { get; } = new();
 		public bool IsLivelyRunning { get; private set; }
 		public IEnumerable<Wallpaper> Wallpapers => wallpapers.Keys;
 		public IReadOnlyDictionary<int, Wallpaper> ActiveMonitorIndexes => activeMonitorIndexes;
@@ -109,6 +110,11 @@ namespace Flow.Launcher.Plugin.Lively
 
 		private async ValueTask LoadLivelySettings(CancellationToken token)
 		{
+			if (!File.Exists(settings.LivelySettingsJsonPath))
+				// Errors.Add(
+				// 	"Could not find the wallpapers directory from Lively. Please set the correct setting.json file type in the plugin settings.");
+				return;
+
 			await using var file = new FileStream(settings.LivelySettingsJsonPath, FileMode.Open, FileAccess.Read);
 			var livelySettings =
 				await JsonSerializer.DeserializeAsync<LivelySettings>(file, JsonSerializerOptions.Default, token);
@@ -128,6 +134,11 @@ namespace Flow.Launcher.Plugin.Lively
 				localWallpapersFolder = Path.Combine(livelyWallpaperFolder, Constants.Folders.LocalWallpapers);
 				webWallpapersFolder = Path.Combine(livelyWallpaperFolder, Constants.Folders.WebWallpapers);
 			}
+
+			Errors.Clear();
+			if (!Directory.Exists(localWallpapersFolder) || !Directory.Exists(webWallpapersFolder))
+				Errors.Add(
+					"Could not find the wallpapers directory from Lively. Please set the correct install type in the plugin settings.");
 		}
 
 		private async ValueTask<WallpaperLayout[]> LoadActiveWallpapers(CancellationToken token)

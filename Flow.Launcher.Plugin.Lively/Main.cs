@@ -16,6 +16,7 @@ namespace Flow.Launcher.Plugin.Lively
 		private Settings settings;
 		private Commands commands;
 		private Query lastQuery;
+		private IErrorInfo[] errorInfos;
 
 		public Task InitAsync(PluginInitContext context)
 		{
@@ -25,6 +26,7 @@ namespace Flow.Launcher.Plugin.Lively
 			QuickSetup.Run(settings, this.context);
 			livelyService = new LivelyService(settings, context);
 			commands = new Commands(livelyService, context);
+			errorInfos = new IErrorInfo[] { settings, livelyService };
 			return Task.CompletedTask;
 		}
 
@@ -50,6 +52,10 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			lastQuery = query;
 			await livelyService.Load(token);
+
+			var errorResults = Results.ErrorInfoResults(errorInfos);
+			if (errorResults.Any())
+				return errorResults;
 
 			var results = GetResults(query);
 			if (!livelyService.IsLivelyRunning)
