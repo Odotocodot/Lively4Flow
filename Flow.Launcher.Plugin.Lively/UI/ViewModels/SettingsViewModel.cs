@@ -58,30 +58,26 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 		};
 
 
-		public bool CanRevert => oldSettings != null && (settings.InstallType != oldSettings.InstallType
-		                                                 || settings.LivelySettingsJsonPath !=
-		                                                 oldSettings.LivelySettingsJsonPath);
+		public bool CanRevert => oldSettings != null && settings != oldSettings;
 
 
 		[RelayCommand]
 		private void RunQuickSetup()
 		{
-			oldSettings = settings with { HasRunQuickSetup = false };
+			oldSettings = settings with { };
 			QuickSetup.Run(settings, context, true);
 			OnPropertyChanged(nameof(LivelySettingsFile));
 			OnPropertyChanged(nameof(LivelyInstallType));
-			OnPropertyChanged(nameof(CanRevert));
+			revertCommand?.NotifyCanExecuteChanged();
 		}
 
 		[RelayCommand(CanExecute = nameof(CanRevert))]
 		private void Revert()
 		{
-			settings.LivelySettingsJsonPath = oldSettings.LivelySettingsJsonPath;
-			settings.InstallType = oldSettings.InstallType;
+			LivelySettingsFile = oldSettings.LivelySettingsJsonPath;
+			LivelyInstallType = oldSettings.InstallType;
 			oldSettings = null;
-			OnPropertyChanged(nameof(LivelySettingsFile));
-			OnPropertyChanged(nameof(LivelyInstallType));
-			OnPropertyChanged(nameof(CanRevert));
+			revertCommand?.NotifyCanExecuteChanged();
 		}
 	}
 }

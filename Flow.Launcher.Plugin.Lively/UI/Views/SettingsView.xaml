@@ -47,7 +47,7 @@
                 <ComboBox
                     Grid.Column="2"
                     ItemsSource="{Binding InstallTypes}"
-                    SelectedValue="{Binding LivelyInstallType, Mode=OneWayToSource}"
+                    SelectedValue="{Binding LivelyInstallType, Mode=TwoWay}"
                     SelectedValuePath="InstallType"
                     DisplayMemberPath="Name"
                     Width="160"
