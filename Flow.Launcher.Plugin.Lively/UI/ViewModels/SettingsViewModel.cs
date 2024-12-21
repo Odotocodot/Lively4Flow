@@ -1,5 +1,3 @@
-using System.ComponentModel;
-using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Flow.Launcher.Plugin.Lively.Models;
@@ -29,22 +27,7 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 		{
 			this.settings = settings;
 			this.context = context;
-			PropertyChanged += ValidateSettings;
-		}
-
-		private void ValidateSettings(object sender, PropertyChangedEventArgs e)
-		{
-			var settingsPath = settings.LivelySettingsJsonPath;
-
-			settings.Errors.Clear();
-			if (settings.InstallType == LivelyInstallType.None)
-				settings.Errors.Add("Lively is not installed!");
-
-			if (!(File.Exists(settingsPath) && Path.GetFileName(settingsPath) == Constants.Files.LivelySettings
-			                                && File.Exists(Path.Combine(
-				                                Path.GetDirectoryName(settingsPath) ?? string.Empty,
-				                                Constants.Files.WallpaperLayout))))
-				settings.Errors.Add("Could not find Lively settings file. Please update the plugin settings");
+			PropertyChanged += (_, _) => this.settings.Validate();
 		}
 
 		public string LivelySettingsFile
@@ -56,7 +39,6 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 				OnPropertyChanged();
 			}
 		}
-
 
 		public LivelyInstallType LivelyInstallType
 		{

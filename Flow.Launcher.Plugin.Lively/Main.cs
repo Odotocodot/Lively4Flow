@@ -16,17 +16,16 @@ namespace Flow.Launcher.Plugin.Lively
 		private Settings settings;
 		private Commands commands;
 		private Query lastQuery;
-		private IErrorInfo[] errorInfos;
 
 		public Task InitAsync(PluginInitContext context)
 		{
 			this.context = context;
 			context.API.VisibilityChanged += OnVisibilityChanged;
 			settings = context.API.LoadSettingJsonStorage<Settings>();
+			settings.Validate();
 			QuickSetup.Run(settings, this.context);
 			livelyService = new LivelyService(settings, context);
 			commands = new Commands(livelyService, context);
-			errorInfos = new IErrorInfo[] { settings, livelyService };
 			return Task.CompletedTask;
 		}
 
@@ -50,12 +49,12 @@ namespace Flow.Launcher.Plugin.Lively
 
 		public async Task<List<Result>> QueryAsync(Query query, CancellationToken token)
 		{
-			lastQuery = query;
-			await livelyService.Load(token);
+			if (settings.HasErrors)
+				return Results.SettingsErrors(settings);
 
-			var errorResults = Results.ErrorInfoResults(errorInfos);
-			if (errorResults.Any())
-				return errorResults;
+			lastQuery = query;
+
+			await livelyService.Load(token);
 
 			var results = GetResults(query);
 			if (!livelyService.IsLivelyRunning)

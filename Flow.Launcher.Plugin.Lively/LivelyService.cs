@@ -12,7 +12,7 @@ using Screen = System.Windows.Forms.Screen;
 
 namespace Flow.Launcher.Plugin.Lively
 {
-	public class LivelyService : IErrorInfo
+	public class LivelyService
 	{
 		private readonly PluginInitContext context;
 		private readonly Settings settings;
@@ -21,7 +21,6 @@ namespace Flow.Launcher.Plugin.Lively
 		private readonly ConcurrentDictionary<int, Wallpaper> activeMonitorIndexes = new();
 
 		private bool canLoadData;
-		public List<string> Errors { get; } = new();
 		public bool IsLivelyRunning { get; private set; }
 		public IEnumerable<Wallpaper> Wallpapers => wallpapers.Keys;
 		public IReadOnlyDictionary<int, Wallpaper> ActiveMonitorIndexes => activeMonitorIndexes;
@@ -53,9 +52,14 @@ namespace Flow.Launcher.Plugin.Lively
 
 			var currentWallpaperTask = LoadActiveWallpapers(token);
 
-			if (settings.HasErrors)
-				return;
 			var (livelyWallpaperLibrary, wallpaperFolders) = await LoadLivelySettings(token);
+
+			if (wallpaperFolders.Any(dir => !Directory.Exists(dir)))
+			{
+				settings.Errors.Add(
+					"Lively install type does not match, the library folder in the Lively settings.json file. Perhaps run quick setup");
+				return;
+			}
 
 			var parallelOptions = new ParallelOptions
 			{

@@ -420,9 +420,8 @@ namespace Flow.Launcher.Plugin.Lively
 			return results;
 		}
 
-		public static List<Result> ErrorInfoResults(IEnumerable<IErrorInfo> errorInfos) =>
-			errorInfos.SelectMany(i => i.Errors)
-				.Select(e => new Result
+		public static List<Result> SettingsErrors(Settings settings) =>
+			settings.Errors.Select(e => new Result
 				{
 					Title = e,
 					IcoPath = Icons.Warning
