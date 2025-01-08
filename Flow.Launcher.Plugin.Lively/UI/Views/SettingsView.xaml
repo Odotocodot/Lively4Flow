@@ -26,8 +26,6 @@
             <ItemsControl Style="{StaticResource SettingGrid}">
                 <StackPanel Style="{StaticResource TextPanel}">
                     <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Lively settings file" />
-                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}"
-                               Text="The Lively settings file, usually found here. link to readme" />
                 </StackPanel>
                 <TextBox
                     Grid.Column="2"
