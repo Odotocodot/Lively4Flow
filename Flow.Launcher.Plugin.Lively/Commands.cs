@@ -17,18 +17,18 @@ namespace Flow.Launcher.Plugin.Lively
 			{
 				new Command("setwp", "Search and set wallpapers", Icons.Set,
 					q => livelyService.Wallpapers.ToResultList(livelyService, context, q)),
-				new Command("random", "Set a random Wallpaper", Icons.Random,
+				new Command("random", "Set a random wallpaper", Icons.Random,
 					_ => Results.For.RandomiseCommand(livelyService)),
 				new Command("closewp", "Close a wallpaper", Icons.Close,
 					_ => Results.For.CloseCommand(livelyService)),
-				new Command("volume", "Set the volume of a wallpaper", Icons.Volume,
+				new Command("volume", "Set wallpaper volume", Icons.Volume,
 					q => Results.For.VolumeCommand(livelyService, q)),
 				new Command("layout", "Change the wallpaper layout", Icons.Layout,
 					_ => Results.For.WallpaperArrangements(livelyService)),
 				new Command("playback", "Pause or play wallpaper playback", Icons.Playback,
 					_ => Results.For.PlaybackCommand(livelyService)),
 				//new Command("seek", "Set wallpaper playback position", null),
-				new Command(Constants.Commands.Open, "Show Lively", Icons.Open, livelyService.Api.OpenLively),
+				new Command("show", "Show Lively", Icons.Open, livelyService.Api.OpenLively),
 				new Command("quit", "Quit Lively", Icons.Quit, livelyService.Api.QuitLively)
 			};
 		}
