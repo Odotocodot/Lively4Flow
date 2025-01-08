@@ -1,12 +1,12 @@
 {
   "ID": "5C310C539BFF4F47BA15D01AF0173032",
-  "ActionKeyword": "lwm",
+  "ActionKeyword": "lw",
   "Name": "Lively Wallpaper Controller",
   "Description": "Quickly change your wallpapers in Lively",
   "Author": "Odotocodot",
   "Version": "1.0.0",
   "Language": "csharp",
-  "Website": "https://github.com/Odotocodot/Flow.Launcher.Plugin.Lively",
+  "Website": "https://github.com/Odotocodot/Lively4Flow",
   "IcoPath": "Images\\icon.png",
   "ExecuteFileName": "Flow.Launcher.Plugin.Lively.dll"
 }
