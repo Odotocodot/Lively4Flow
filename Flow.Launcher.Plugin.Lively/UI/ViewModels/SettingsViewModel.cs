@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Flow.Launcher.Plugin.Lively.Models;
@@ -28,6 +29,16 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 			this.settings = settings;
 			this.context = context;
 			PropertyChanged += (_, _) => this.settings.Validate();
+		}
+
+		public bool ShowViewCommandsResult
+		{
+			get => settings.ShowViewCommandsResult;
+			set
+			{
+				settings.ShowViewCommandsResult = value;
+				OnPropertyChanged();
+			}
 		}
 
 		public string LivelySettingsFile
@@ -62,10 +73,10 @@ namespace Flow.Launcher.Plugin.Lively.UI.ViewModels
 
 
 		[RelayCommand]
-		private void RunQuickSetup()
+		private async Task RunQuickSetup()
 		{
 			oldSettings = settings with { };
-			QuickSetup.Run(settings, context, true);
+			await Task.Run(() => QuickSetup.Run(settings, context, true));
 			OnPropertyChanged(nameof(LivelySettingsFile));
 			OnPropertyChanged(nameof(LivelyInstallType));
 			revertCommand?.NotifyCanExecuteChanged();

@@ -67,7 +67,8 @@ namespace Flow.Launcher.Plugin.Lively
 			if (string.IsNullOrWhiteSpace(query.Search))
 			{
 				var results = livelyService.Wallpapers.ToResultList(livelyService, context);
-				results.Insert(0, Results.ViewCommandResult(context));
+				if (settings.ShowViewCommandsResult)
+					results.Insert(0, Results.ViewCommandResult(context));
 				return results;
 			}
 
