@@ -41,8 +41,8 @@ namespace Flow.Launcher.Plugin.Lively
 
 		public async ValueTask Load(CancellationToken token)
 		{
-			IsLivelyRunning = Process.GetProcessesByName("Lively")
-				.Any(p => p.MainModule?.FileName.EndsWith("Lively.exe") == true);
+			IsLivelyRunning = Process.GetProcessesByName(nameof(Constants.Lively))
+				.Any(p => p.MainModule?.FileName.EndsWith($"{nameof(Constants.Lively)}.exe") == true);
 
 			MonitorCount = Screen.AllScreens.Length;
 
