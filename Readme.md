@@ -28,10 +28,10 @@ The first time the plugin runs it will attempt to automatically find your Lively
 If the plugin does not work out of the box, head to the plugin settings and make sure the `Settings.json` path and the
 type of installation is correct.
 
-| Installation Type | Typical `Settings.json` Path                     |
-|-------------------|--------------------------------------------------|
-| GitHub            | `%APPDATA%\Local\Lively Wallpaper\Settings.json` |
-| Microsoft Store   | `TODO`                                           |
+| Installation Type | Typical `Settings.json` Path                                                                                                |
+|-------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| GitHub            | `%APPDATA%\Local\Lively Wallpaper\Settings.json`                                                                            |
+| Microsoft Store   | `%APPDATA%\Local\Packages\12030rocksdanister.LivelyWallpaper_97hta09mmv6hy\LocalCache\Local\Lively Wallpaper\Settings.json` |
 
 </details>
 
@@ -48,16 +48,16 @@ GIF
 
 The plugin has a set of commands available so don't have to navigate to Lively every time.
 
-| Command Keyword | Action                                           |
-|-----------------|--------------------------------------------------|
-| `setwp`         | Search and set wallpapers                        |
-| `random`        | Set a random wallpaper                           |
-| `closewp`       | Close a wallpaper                                |
-| `volume`        | Set wallpaper volume                             |
-| `layout`        | Change the layout of wallpapers                  |
-| `playback`      | Pause or play wallpaper playback                 |
-| `show`          | Unminimize/show the Lively Wallpaper application |
-| `quit`          | Quit Lively Wallpaper                            |
+| Command Keyword | Action                                      |
+|-----------------|---------------------------------------------|
+| `setwp`         | Search and set wallpapers                   |
+| `random`        | Set a random wallpaper                      |
+| `closewp`       | Close a wallpaper                           |
+| `volume`        | Set wallpaper volume                        |
+| `layout`        | Change the layout of wallpapers             |
+| `playback`      | Pause or play wallpaper playback            |
+| `show`          | Unminimize the Lively Wallpaper application |
+| `quit`          | Quit Lively Wallpaper                       |
 
 > [IMPORTANT]
 >
