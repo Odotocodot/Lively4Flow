@@ -66,7 +66,8 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			if (string.IsNullOrWhiteSpace(query.Search))
 			{
-				var results = livelyService.Wallpapers.ToResultList(livelyService, context);
+				var results = livelyService.Wallpapers.OrderBy(x => x.Title)
+					.ToResultList(livelyService, context);
 				if (settings.ShowViewCommandsResult)
 					results.Insert(0, Results.ViewCommandResult(context));
 				return results;
@@ -90,7 +91,11 @@ namespace Flow.Launcher.Plugin.Lively
 				.ToResultList(livelyService, context, query.Search);
 		}
 
-		public void Dispose() => context.API.VisibilityChanged -= OnVisibilityChanged;
+		public void Dispose()
+		{
+			context.API.VisibilityChanged -= OnVisibilityChanged;
+			livelyService.DisableLoading();
+		}
 
 		public Control CreateSettingPanel() => settings.GetSettingsView(context);
 

@@ -77,7 +77,7 @@ namespace Flow.Launcher.Plugin.Lively
 			}
 			catch (Exception e) when (e is DirectoryNotFoundException or AggregateException)
 			{
-				context.API.LogException($"{Constants.PluginName}.{nameof(LivelyService)}", "Invalid Folders", e);
+				context.API.LogException($"{Constants.PluginName}.{nameof(LivelyService)}", "Invalid Folder Paths", e);
 			}
 		}
 
