@@ -1,9 +1,9 @@
 <p align="center">
   <a href="https://flowlauncher.com">
-    <img src="doc/flow.png" width=12.5%>
+    <img src="docs/flow.png" width=12.5%>
   </a>
   <a href="https://www.rocksdanister.com/lively/">
-    <img src= "doc/lively.png" width=12.5%>
+    <img src= "Flow.Launcher.Plugin.Lively/Images/icon.png" width=12.5%>
   </a>
 </p>
 <h1 align="center">Lively Wallpaper for Flow Launcher</h1>
@@ -39,27 +39,37 @@ type of installation is correct.
 
 See all your lively wallpapers and change your current one quickly.
 
-GIF
+```
+lw {your search}
+```
 
-- Supports a multi monitor set up.
-- Supports both the GitHub and Microsoft Store Lively Wallpaper versions.
+![set wallpaper](docs/set_wallpaper.gif)
+
+
+For a multi monitor with the wallpaper layout on `per monitor` use the context menu on results to choose a specific monitor.
+
+![wallpaper context menu](docs/context_menu.png)
 
 ### Commands
 
 The plugin has a set of commands available so don't have to navigate to Lively every time.
 
-| Command Keyword | Action                                                          |
-|-----------------|-----------------------------------------------------------------|
-| `setwp`         | Search and set wallpapers                                       |
-| `random`        | Set a random wallpaper                                          |
-| `closewp`       | Close a wallpaper                                               |
-| `volume`        | Set wallpaper volume                                            |
-| `layout`        | Change the layout of wallpapers (per monitor, span & duplicate) |
-| `playback`      | Pause or play wallpaper playback                                |
-| `show`          | Unminimize the Lively Wallpaper application                     |
-| `quit`          | Quit Lively Wallpaper                                           |
+| Command Keyword | Action                                                                |
+|-----------------|-----------------------------------------------------------------------|
+| `setwp`         | Search and set wallpapers                                             |
+| `random`        | Set a random wallpaper                                                |
+| `closewp`       | Close a wallpaper                                                     |
+| `volume`        | Set wallpaper volume                                                  |
+| `layout`        | Change the layout of wallpapers (`per monitor`, `span` & `duplicate`) |
+| `playback`      | Pause or play wallpaper playback                                      |
+| `show`          | Unminimize the Lively Wallpaper application                           |
+| `quit`          | Quit Lively Wallpaper                                                 |
 
-> [IMPORTANT]
+![close wallpaper](docs/close_wallpaper.gif)
+
+![set random wallpaper](docs/randomise_wallpaper.gif)
+
+> [!IMPORTANT]
 >
 > Lively Wallpaper must be running (in the background) for the commands to function properly.
 
