@@ -356,7 +356,7 @@ namespace Flow.Launcher.Plugin.Lively
 			Title = "Lively Wallpaper is not running",
 			SubTitle = "Open Lively to use this plugin with full functionality",
 			Score = 200 * ScoreMultiplier,
-			IcoPath = Icons.Warning
+			Glyph = Icons.Warning
 		};
 
 		public static List<Result> ContextMenu(Result selectedResult, LivelyService livelyService)
@@ -372,7 +372,7 @@ namespace Flow.Launcher.Plugin.Lively
 			results.Add(new Result
 			{
 				Title = $"{setPrefix}{AppendAllMonitors(livelyService.IsSingleDisplay)}",
-				Score = (livelyService.MonitorCount + 2) * ScoreMultiplier,
+				Score = (livelyService.MonitorCount + 2) * 2 * ScoreMultiplier,
 				IcoPath = Icons.Set,
 				Action = _ =>
 				{
@@ -386,7 +386,7 @@ namespace Flow.Launcher.Plugin.Lively
 					results.Add(GetMonitorIndexResult(setPrefix,
 						Icons.Set,
 						index,
-						(livelyService.MonitorCount + 1) * ScoreMultiplier,
+						(livelyService.MonitorCount + 1) * 2 * ScoreMultiplier,
 						i => livelyService.Api.SetWallpaper(wallpaper, i))));
 
 			//Closing wallpapers
@@ -424,7 +424,7 @@ namespace Flow.Launcher.Plugin.Lively
 			settings.Errors.Select(e => new Result
 				{
 					Title = e,
-					IcoPath = Icons.Warning
+					Glyph = Icons.Error
 				})
 				.ToList();
 	}

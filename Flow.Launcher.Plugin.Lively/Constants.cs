@@ -48,8 +48,9 @@ namespace Flow.Launcher.Plugin.Lively
 			public const string Playback = Lively;
 			public const string Open = Lively;
 			public const string Quit = Lively;
-			public const string Warning = Lively;
 			public const string Lively = Base + "icon.png";
+			public static GlyphInfo Warning { get; } = new("Segoe Fluent Icons,Segoe MDL2 Assets", "\xE7BA");
+			public static GlyphInfo Error { get; } = new("Segoe Fluent Icons,Segoe MDL2 Assets", "\xEA39");
 		}
 
 		public static class Lively
