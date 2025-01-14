@@ -1,16 +1,14 @@
 <p align="center">
   <a href="https://flowlauncher.com">
-    <img src="docs/flow.png" width=12.5%>
+    <img alt="flow launcher" src="docs/flow.png" width=12.5%>
   </a>
   <a href="https://www.rocksdanister.com/lively/">
-    <img src= "Flow.Launcher.Plugin.Lively/Images/icon.png" width=12.5%>
+    <img alt="lively wallpaper" src= "Flow.Launcher.Plugin.Lively/Images/icon.png" width=12.5%>
   </a>
 </p>
 <h1 align="center">Lively Wallpaper for Flow Launcher</h1>
 
-A [Lively Wallpaper](https://www.rocksdanister.com/lively/) plugin
-for [Flow launcher](https://github.com/Flow-Launcher/Flow.Launcher), allowing for the ability to quickly change your
-wallpaper and more!
+A [Lively Wallpaper](https://www.rocksdanister.com/lively/) plugin for [Flow launcher](https://github.com/Flow-Launcher/Flow.Launcher), allowing for the ability to quickly change your wallpaper and more!
 
 ## Installation
 
@@ -20,16 +18,15 @@ Using Flow Launcher type:
 pm install Lively Wallpaper Controller
 ```
 
-The first time the plugin runs it will attempt to automatically find your Lively Wallpaper `Settings.json` file.
+The first time the plugin runs it will attempt to automatically find your Lively Wallpaper `Settings.json` file and installation type.
 
 <details>
   <summary>Troubleshooting</summary>
 
-If the plugin does not work out of the box, head to the plugin settings and make sure the `Settings.json` path and the
-type of installation is correct.
+If the plugin does not work out of the box, navigate to the plugin settings and make sure the `Settings.json` path and the type of installation is correct.
 
 | Installation Type | Typical `Settings.json` Path                                                                                                |
-|-------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | GitHub            | `%APPDATA%\Local\Lively Wallpaper\Settings.json`                                                                            |
 | Microsoft Store   | `%APPDATA%\Local\Packages\12030rocksdanister.LivelyWallpaper_97hta09mmv6hy\LocalCache\Local\Lively Wallpaper\Settings.json` |
 
@@ -37,25 +34,30 @@ type of installation is correct.
 
 ## Features
 
-See all your lively wallpapers and change your current one quickly.
+See all your lively wallpapers at a glance.
 
 ```
 lw {your search}
 ```
 
-![set wallpaper](docs/set_wallpaper.gif)
+<img alt="set wallpaper" src="docs/set_wallpaper.gif" width="640"/>
 
+Use the preview panel (default shortcut: <kbd>F1</kbd>) to get a preview!
 
-For a multi monitor with the wallpaper layout on `per monitor` use the context menu on results to choose a specific monitor.
+<img alt="preview panel gif of a gif" src="docs/preview_panel.gif" width="633"/>
 
-![wallpaper context menu](docs/context_menu.png)
+For a multi monitor setup, you can quickly change the Lively wallpaper layout to `per monitor` with the `layout` command.
+
+Then, when accessing the flow launcher context menu (default shortcut: <kbd>⇧ Shift</kbd> + <kbd>⏎ Enter</kbd>) on a wallpaper result you can choose a specific monitor to set that wallpaper on.
+
+<img alt="wallpaper context menu" src="docs/context_menu.png" width="492"/>
 
 ### Commands
 
-The plugin has a set of commands available so don't have to navigate to Lively every time.
+The plugin has a set of commands available so you don't have to navigate to Lively every time.
 
 | Command Keyword | Action                                                                |
-|-----------------|-----------------------------------------------------------------------|
+| --------------- | --------------------------------------------------------------------- |
 | `setwp`         | Search and set wallpapers                                             |
 | `random`        | Set a random wallpaper                                                |
 | `closewp`       | Close a wallpaper                                                     |
@@ -65,9 +67,9 @@ The plugin has a set of commands available so don't have to navigate to Lively e
 | `show`          | Unminimize the Lively Wallpaper application                           |
 | `quit`          | Quit Lively Wallpaper                                                 |
 
-![close wallpaper](docs/close_wallpaper.gif)
+<img alt="close wallpaper" src="docs/close_wallpaper.gif" width="640"/>
 
-![set random wallpaper](docs/randomise_wallpaper.gif)
+<img alt="set random wallpaper" src="docs/randomise_wallpaper.gif" width="640"/>
 
 > [!IMPORTANT]
 >
@@ -75,7 +77,5 @@ The plugin has a set of commands available so don't have to navigate to Lively e
 
 ## Additional Information
 
-This plugin comes with the [Lively Command Utility](https://github.com/rocksdanister/lively/releases/tag/v2.0.4.0)
-installed.
-This allows easy use of the lively [command line](https://github.com/rocksdanister/lively/wiki/Command-Line-Controls)
-without needing the path to the Lively exe.
+This plugin comes with the [Lively Command Utility](https://github.com/rocksdanister/lively/releases/tag/v2.0.4.0) installed.
+This allows easy use of the lively [command line](https://github.com/rocksdanister/lively/wiki/Command-Line-Controls) without needing the path to the Lively exe.
