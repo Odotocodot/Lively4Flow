@@ -48,7 +48,7 @@ Use the preview panel (default shortcut: <kbd>F1</kbd>) to get a preview!
 
 For a multi monitor setup, you can quickly change the Lively wallpaper layout to `per monitor` with the `layout` command.
 
-Then, when accessing the flow launcher context menu (default shortcut: <kbd>⇧ Shift</kbd> + <kbd>⏎ Enter</kbd>) on a wallpaper result you can choose a specific monitor to set that wallpaper on.
+Then, when accessing the Flow Launcher context menu (default shortcut: <kbd>⇧ Shift</kbd> + <kbd>⏎ Enter</kbd>) on a wallpaper result you can choose a specific monitor to set that wallpaper on.
 
 <img alt="wallpaper context menu" src="docs/context_menu.png" width="492"/>
 
