@@ -14,7 +14,7 @@ namespace Flow.Launcher.Plugin.Lively
 		private PluginInitContext context;
 		private LivelyService livelyService;
 		private Settings settings;
-		private Commands commands;
+		private CommandCollection commands;
 		private Query lastQuery;
 
 		public Task InitAsync(PluginInitContext context)
@@ -25,7 +25,7 @@ namespace Flow.Launcher.Plugin.Lively
 			settings.Validate();
 			QuickSetup.Run(settings, this.context);
 			livelyService = new LivelyService(settings, context);
-			commands = new Commands(livelyService, context);
+			commands = new CommandCollection(livelyService, context);
 			return Task.CompletedTask;
 		}
 

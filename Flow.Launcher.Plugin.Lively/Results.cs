@@ -11,6 +11,9 @@ namespace Flow.Launcher.Plugin.Lively
 
 	public static class Results
 	{
+		public const string SelectedEmoji = "\u2605"; //or ⭐\u2b50
+		public const int ScoreMultiplier = 1000;
+
 		public static class For
 		{
 			public static List<Result> RandomiseCommand(LivelyService livelyService)
@@ -253,13 +256,10 @@ namespace Flow.Launcher.Plugin.Lively
 			}
 		}
 
-		private const string SelectedEmoji = "\u2605"; //or ⭐\u2b50
-		private const int ScoreMultiplier = 1000;
-
 		//Invert boolean maybe
-		private static string AppendAllMonitors(bool singleMonitor) => singleMonitor ? "" : " on all monitors";
+		public static string AppendAllMonitors(bool singleMonitor) => singleMonitor ? "" : " on all monitors";
 
-		private static string OffsetTitle(string title, string offset, List<int> highlightData)
+		public static string OffsetTitle(string title, string offset, List<int> highlightData)
 		{
 			title = title.Insert(0, offset);
 
@@ -271,7 +271,7 @@ namespace Flow.Launcher.Plugin.Lively
 			return title;
 		}
 
-		private static Result GetMonitorIndexResult(string prefix, string iconPath, int index, int maxScore,
+		public static Result GetMonitorIndexResult(string prefix, string iconPath, int index, int maxScore,
 			Action<int> action,
 			string subTitle = null) => new()
 		{
@@ -330,7 +330,6 @@ namespace Flow.Launcher.Plugin.Lively
 				}
 			}
 		};
-
 
 		public static Result ViewCommandResult(PluginInitContext context)
 		{

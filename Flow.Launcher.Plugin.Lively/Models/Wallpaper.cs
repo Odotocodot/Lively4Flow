@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Flow.Launcher.Plugin.Lively.UI;
 
 namespace Flow.Launcher.Plugin.Lively.Models
 {
@@ -20,9 +22,9 @@ namespace Flow.Launcher.Plugin.Lively.Models
 		//string Id,
 		//List<string> Tags,
 		//int Version
-	) : ISearchable
+	) : ISearchable, ISearchableResult // TODO: maybe IResultContextMenu?
 	{
-		//Could move this to another type?
+		// Could move this to another type?
 		/// <summary>
 		/// Actual location of the wallpaper on disk. Used when opening the directory in windows.
 		/// </summary>
@@ -53,5 +55,38 @@ namespace Flow.Launcher.Plugin.Lively.Models
 		}
 
 		string ISearchable.SearchableString => Title;
+
+		string ISearchableResult.SearchableString => Title;
+
+		Result ISearchableResult.ToResult(PluginInitContext context, LivelyService livelyService,
+			List<int> highlightData = null)
+		{
+			var title = Title;
+			var score = 0;
+			if (livelyService.IsActiveWallpaper(this, out var monitorIndexes))
+			{
+				var offset = livelyService.IsSingleDisplay
+					? $"{Results.SelectedEmoji} | "
+					: $"{Results.SelectedEmoji} {string.Join(", ", monitorIndexes)} | ";
+				title = Results.OffsetTitle(title, offset, highlightData);
+				score = 2 * Results.ScoreMultiplier;
+			}
+
+			return new Result
+			{
+				Title = title,
+				SubTitle = Desc,
+				IcoPath = IconPath,
+				Score = score,
+				ContextData = this,
+				PreviewPanel = this.GetUserControl(),
+				TitleHighlightData = highlightData,
+				Action = _ =>
+				{
+					livelyService.Api.SetWallpaper(this); // TODO: change this livelyService.Commands.SetWallpaper(this)
+					return true;
+				}
+			};
+		}
 	}
 }

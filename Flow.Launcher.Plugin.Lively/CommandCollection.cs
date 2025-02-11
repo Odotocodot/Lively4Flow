@@ -7,11 +7,11 @@ namespace Flow.Launcher.Plugin.Lively
 {
 	using Icons = Constants.Icons;
 
-	public class Commands : IEnumerable<Command>
+	public class CommandCollection : IEnumerable<Command>
 	{
 		private readonly CommandKeyedCollection commands;
 
-		public Commands(LivelyService livelyService, PluginInitContext context)
+		public CommandCollection(LivelyService livelyService, PluginInitContext context)
 		{
 			commands = new CommandKeyedCollection
 			{
