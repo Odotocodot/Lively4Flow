@@ -36,10 +36,10 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 								.DefaultIfEmpty()
 								.MinBy(x => x.Key)
 								.Value;
-							livelyService.Api.SetWallpaperLayout(arrangement);
+							Execute($"--layout {Enum.GetName(arrangement)!.ToLower()}");
 							//Task.Delay(500).Wait();
 							if (activeWallpaper != null)
-								livelyService.Api.SetWallpaper(activeWallpaper);
+								SetWallpaperCommand.Execute(livelyService, activeWallpaper);
 							return true;
 						}
 					};

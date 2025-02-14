@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Flow.Launcher.Plugin.Lively.Commands
 {
@@ -10,6 +11,11 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 		public int Score { private get; set; }
 		public string SearchableString => Shortcut;
 
+		protected static void Execute(string args)
+		{
+			var psi = new ProcessStartInfo(Constants.CommandUtility, args) { CreateNoWindow = true };
+			using Process process = Process.Start(psi);
+		}
 
 		public Result ToResult(PluginInitContext context, LivelyService livelyService, List<int> highlightData = null)
 		{

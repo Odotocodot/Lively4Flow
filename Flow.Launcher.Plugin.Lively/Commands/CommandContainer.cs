@@ -8,6 +8,10 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 	{
 		private readonly CommandKeyedCollection commands;
 
+		// TODO: initialise with reflection for easy. Also maybe create 
+		// a dictionary that lookups by type so can do things like:
+		// commands[typeof(SetWallpaperCommand)].Execute
+
 		public CommandContainer()
 		{
 			commands = new CommandKeyedCollection
@@ -26,6 +30,24 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 				commands[i].Score = (commands.Count - i) * Results.ScoreMultiplier;
 		}
 
+		public Result ViewCommandResult(PluginInitContext context)
+		{
+			var autoCompleteText = $"{context.CurrentPluginMetadata.ActionKeyword} {Constants.Commands.Keyword}";
+
+			return new Result
+			{
+				Title = "View Lively commands",
+				SubTitle = $"Type '{Constants.Commands.Keyword}' or select this result to view commands",
+				Score = 100 * Results.ScoreMultiplier,
+				IcoPath = Constants.Icons.Lively,
+				AutoCompleteText = autoCompleteText,
+				Action = _ =>
+				{
+					context.API.ChangeQuery(autoCompleteText);
+					return false;
+				}
+			};
+		}
 
 		public bool TryGetCommand(string query, out CommandBase command) => commands.TryGetValue(query, out command);
 

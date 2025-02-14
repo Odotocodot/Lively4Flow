@@ -84,26 +84,6 @@ namespace Flow.Launcher.Plugin.Lively
 			}
 		};
 
-		// TODO: move this to CommandBase.cs;
-		public static Result ViewCommandResult(PluginInitContext context)
-		{
-			var autoCompleteText = $"{context.CurrentPluginMetadata.ActionKeyword} {Constants.Commands.Keyword}";
-
-			return new Result
-			{
-				Title = "View Lively commands",
-				SubTitle = $"Type '{Constants.Commands.Keyword}' or select this result to view commands",
-				Score = 100 * ScoreMultiplier,
-				IcoPath = Icons.Lively,
-				AutoCompleteText = autoCompleteText,
-				Action = _ =>
-				{
-					context.API.ChangeQuery(autoCompleteText);
-					return false;
-				}
-			};
-		}
-
 		public static Result LivelyNotRunningResult() => new()
 		{
 			Title = "Lively Wallpaper is not running",

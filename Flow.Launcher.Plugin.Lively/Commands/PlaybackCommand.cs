@@ -7,6 +7,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 		public override string Shortcut { get; } = "playback";
 		protected override string Description { get; } = "Pause or resume wallpaper playback";
 		protected override string IconPath { get; } = Constants.Icons.Playback;
+		private static void Execute(bool playbackState) => Execute($"--play {playbackState}");
 
 		public override List<Result> CommandResults(PluginInitContext context, LivelyService livelyService,
 			string query = null) => new()
@@ -18,7 +19,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 				IcoPath = Constants.Icons.Playback,
 				Action = _ =>
 				{
-					livelyService.Api.WallpaperPlayback(true);
+					Execute(true);
 					return true;
 				}
 			},
@@ -29,7 +30,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 				IcoPath = Constants.Icons.Playback,
 				Action = _ =>
 				{
-					livelyService.Api.WallpaperPlayback(false);
+					Execute(false);
 					return true;
 				}
 			}

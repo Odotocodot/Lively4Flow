@@ -25,7 +25,6 @@ namespace Flow.Launcher.Plugin.Lively
 		public bool IsLivelyRunning { get; private set; }
 		public IEnumerable<Wallpaper> Wallpapers => wallpapers.Keys;
 		public IReadOnlyDictionary<int, Wallpaper> ActiveMonitorIndexes => activeMonitorIndexes;
-		public LivelyCommandApi Api { get; }
 		public WallpaperArrangement WallpaperArrangement { get; private set; }
 		public int MonitorCount { get; private set; }
 
@@ -36,7 +35,6 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			this.settings = settings;
 			this.context = context;
-			Api = new LivelyCommandApi(this);
 		}
 
 		public async ValueTask Load(CancellationToken token)
@@ -180,6 +178,7 @@ namespace Flow.Launcher.Plugin.Lively
 			return wallpaper;
 		}
 
+		//TODO: move to Wallpaper.cs?
 		public bool IsActiveWallpaper(Wallpaper wallpaper, out List<int> livelyMonitorIndexes)
 		{
 			livelyMonitorIndexes = wallpapers[wallpaper];

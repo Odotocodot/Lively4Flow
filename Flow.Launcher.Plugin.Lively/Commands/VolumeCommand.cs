@@ -9,6 +9,8 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 		protected override string Description { get; } = "Set wallpaper volume";
 		protected override string IconPath { get; } = Constants.Icons.Volume;
 
+		private static void Execute(int volume) => Execute($"--volume {volume}");
+
 		public override List<Result> CommandResults(PluginInitContext context, LivelyService livelyService,
 			string query = null)
 		{
@@ -31,7 +33,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 					Action = _ =>
 					{
 						if (volume.HasValue)
-							livelyService.Api.SetVolume(volume.Value);
+							Execute(volume.Value);
 						return volume.HasValue;
 					}
 				},
@@ -42,7 +44,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 					IcoPath = Constants.Icons.Volume,
 					Action = _ =>
 					{
-						livelyService.Api.SetVolume(0);
+						Execute(0);
 						return true;
 					}
 				},
@@ -53,7 +55,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 					IcoPath = Constants.Icons.Volume,
 					Action = _ =>
 					{
-						livelyService.Api.SetVolume(50);
+						Execute(50);
 						return true;
 					}
 				},
@@ -64,7 +66,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 					IcoPath = Constants.Icons.Volume,
 					Action = _ =>
 					{
-						livelyService.Api.SetVolume(100);
+						Execute(100);
 						return true;
 					}
 				}

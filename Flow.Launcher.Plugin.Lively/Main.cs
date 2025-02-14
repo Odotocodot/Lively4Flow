@@ -36,16 +36,13 @@ namespace Flow.Launcher.Plugin.Lively
 				return;
 
 			if (args.IsVisible)
-			{
 				livelyService.EnableLoading();
-				if (lastQuery?.ActionKeyword == context.CurrentPluginMetadata.ActionKeyword
-				    && livelyService.Api.UIRefreshRequired())
-					context.API.ReQuery();
-			}
+			// TODO: reimplement refreshing UI
+			// if (lastQuery?.ActionKeyword == context.CurrentPluginMetadata.ActionKeyword
+			//     && livelyService.Api.UIRefreshRequired())
+			// 	context.API.ReQuery();
 			else
-			{
 				livelyService.DisableLoading();
-			}
 		}
 
 		public async Task<List<Result>> QueryAsync(Query query, CancellationToken token)
@@ -70,7 +67,7 @@ namespace Flow.Launcher.Plugin.Lively
 				var results = livelyService.Wallpapers.OrderBy(x => x.Title)
 					.ToResultList(context, livelyService);
 				if (settings.ShowViewCommandsResult)
-					results.Insert(0, Results.ViewCommandResult(context));
+					results.Insert(0, commands.ViewCommandResult(context));
 				return results;
 			}
 
