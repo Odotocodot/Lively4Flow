@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using Flow.Launcher.Plugin.Lively.Commands;
 using Flow.Launcher.Plugin.Lively.Models;
 using Flow.Launcher.Plugin.Lively.UI;
 
@@ -14,7 +15,7 @@ namespace Flow.Launcher.Plugin.Lively
 		private PluginInitContext context;
 		private LivelyService livelyService;
 		private Settings settings;
-		private CommandCollection commands;
+		private CommandContainer commands;
 		private Query lastQuery;
 
 		public Task InitAsync(PluginInitContext context)
@@ -25,7 +26,7 @@ namespace Flow.Launcher.Plugin.Lively
 			settings.Validate();
 			QuickSetup.Run(settings, this.context);
 			livelyService = new LivelyService(settings, context);
-			commands = new CommandCollection(livelyService, context);
+			commands = new CommandContainer();
 			return Task.CompletedTask;
 		}
 
@@ -67,7 +68,7 @@ namespace Flow.Launcher.Plugin.Lively
 			if (string.IsNullOrWhiteSpace(query.Search))
 			{
 				var results = livelyService.Wallpapers.OrderBy(x => x.Title)
-					.ToResultList(livelyService, context);
+					.ToResultList(context, livelyService);
 				if (settings.ShowViewCommandsResult)
 					results.Insert(0, Results.ViewCommandResult(context));
 				return results;
@@ -76,19 +77,19 @@ namespace Flow.Launcher.Plugin.Lively
 			if (query.FirstSearch.StartsWith(Constants.Commands.Keyword))
 			{
 				if (query.FirstSearch.Length <= Constants.Commands.Keyword.Length)
-					return commands.ToResultList(livelyService, context);
+					return commands.ToResultList(context, livelyService);
 
 				var commandQuery = query.FirstSearch[1..].Trim();
 
-				if (commands.TryGetCommand(commandQuery, out Command command))
-					return command.ResultGetter(query.SecondToEndSearch);
+				if (commands.TryGetCommand(commandQuery, out CommandBase command))
+					return command.CommandResults(context, livelyService, query.SecondToEndSearch);
 
-				return commands.ToResultList(livelyService, context, commandQuery);
+				return commands.ToResultList(context, livelyService, commandQuery);
 			}
 
-			return livelyService.Wallpapers.Cast<ISearchable>()
+			return livelyService.Wallpapers.Cast<ISearchableResult>()
 				.Concat(commands)
-				.ToResultList(livelyService, context, query.Search);
+				.ToResultList(context, livelyService, query.Search);
 		}
 
 		public void Dispose()
@@ -99,6 +100,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 		public Control CreateSettingPanel() => settings.GetSettingsView(context);
 
-		public List<Result> LoadContextMenus(Result result) => Results.ContextMenu(result, livelyService);
+		public List<Result> LoadContextMenus(Result result) =>
+			result.ContextData is IHasContextMenu data ? data.ToContextMenu(livelyService) : null;
 	}
 }

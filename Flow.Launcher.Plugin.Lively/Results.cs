@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Flow.Launcher.Plugin.Lively.Models;
-using Flow.Launcher.Plugin.Lively.UI;
 using Flow.Launcher.Plugin.SharedModels;
 
 namespace Flow.Launcher.Plugin.Lively
@@ -13,248 +12,6 @@ namespace Flow.Launcher.Plugin.Lively
 	{
 		public const string SelectedEmoji = "\u2605"; //or ⭐\u2b50
 		public const int ScoreMultiplier = 1000;
-
-		public static class For
-		{
-			public static List<Result> RandomiseCommand(LivelyService livelyService)
-			{
-				var results = new List<Result>();
-				const string prefix = "Set a random wallpaper";
-				results.Add(new Result
-				{
-					Title = $"{prefix}{AppendAllMonitors(livelyService.IsSingleDisplay)}",
-					Score = (livelyService.MonitorCount + 2) * ScoreMultiplier,
-					IcoPath = Icons.Random,
-					Action = _ =>
-					{
-						livelyService.Api.RandomiseWallpaper();
-						return true;
-					}
-				});
-				if (livelyService.IsSingleDisplay)
-					return results;
-
-				livelyService.IterateMonitors(index =>
-					results.Add(GetMonitorIndexResult(prefix,
-						Icons.Random,
-						index,
-						(livelyService.MonitorCount + 1) * ScoreMultiplier,
-						i => livelyService.Api.RandomiseWallpaper(i))));
-
-				return results;
-			}
-
-			public static List<Result> CloseCommand(LivelyService livelyService)
-			{
-				var activeMonitors = livelyService.ActiveMonitorIndexes;
-				if (!activeMonitors.Any())
-					return SingleResult("No active Lively wallpapers", Icons.Close, null, false);
-
-				var results = new List<Result>();
-				const string prefix = "Close active wallpaper";
-
-				if (livelyService.IsSingleDisplay || activeMonitors.Count > 1)
-					results.Add(new Result
-					{
-						Title = $"{prefix}{AppendAllMonitors(activeMonitors.Count <= 1)}",
-						SubTitle = activeMonitors.Count <= 1
-							? $"Current Wallpaper: {activeMonitors.First().Value.Title}"
-							: null,
-						Score = (livelyService.MonitorCount + 2) * ScoreMultiplier,
-						IcoPath = Icons.Close,
-						Action = _ =>
-						{
-							livelyService.Api.CloseWallpaper();
-							return true;
-						}
-					});
-
-				if (livelyService.IsSingleDisplay)
-					return results;
-
-				results.AddRange(activeMonitors.Select(activeMonitor =>
-					GetMonitorIndexResult(prefix,
-						Icons.Close,
-						activeMonitor.Key,
-						(livelyService.MonitorCount + 1) * ScoreMultiplier,
-						index => livelyService.Api.CloseWallpaper(index),
-						$"Current Wallpaper: {activeMonitor.Value.Title}")));
-
-				return results;
-			}
-
-			public static List<Result> VolumeCommand(LivelyService livelyService, string query)
-			{
-				int? volume = null;
-				string titleSuffix = null;
-				if (int.TryParse(query, out var vol))
-				{
-					volume = Math.Clamp(vol, 0, 100);
-					titleSuffix = $" to {volume}";
-				}
-
-				return new List<Result>
-				{
-					new()
-					{
-						Title = $"Set wallpaper volume{titleSuffix}",
-						SubTitle = "Type a value between 0 and 100 to specify",
-						Score = 3 * ScoreMultiplier,
-						IcoPath = Icons.Volume,
-						Action = _ =>
-						{
-							if (volume.HasValue)
-								livelyService.Api.SetVolume(volume.Value);
-							return volume.HasValue;
-						}
-					},
-					new()
-					{
-						Title = "Set wallpaper volume to 0 (Mute)",
-						Score = 2 * ScoreMultiplier,
-						IcoPath = Icons.Volume,
-						Action = _ =>
-						{
-							livelyService.Api.SetVolume(0);
-							return true;
-						}
-					},
-					new()
-					{
-						Title = "Set wallpaper volume to 50",
-						Score = 1 * ScoreMultiplier,
-						IcoPath = Icons.Volume,
-						Action = _ =>
-						{
-							livelyService.Api.SetVolume(50);
-							return true;
-						}
-					},
-					new()
-					{
-						Title = "Set wallpaper volume to 100 (Max)",
-						Score = 0,
-						IcoPath = Icons.Volume,
-						Action = _ =>
-						{
-							livelyService.Api.SetVolume(100);
-							return true;
-						}
-					}
-				};
-			}
-
-			public static List<Result> PlaybackCommand(LivelyService livelyService) => new()
-			{
-				new Result
-				{
-					Title = "Resume wallpaper playback",
-					Score = 2000,
-					IcoPath = Icons.Playback,
-					Action = _ =>
-					{
-						livelyService.Api.WallpaperPlayback(true);
-						return true;
-					}
-				},
-				new Result
-				{
-					Title = "Pause wallpaper playback",
-					Score = 0,
-					IcoPath = Icons.Playback,
-					Action = _ =>
-					{
-						livelyService.Api.WallpaperPlayback(false);
-						return true;
-					}
-				}
-			};
-
-			public static List<Result> WallpaperArrangements(LivelyService livelyService) =>
-				Enum.GetValues<WallpaperArrangement>()
-					.Select(arrangement =>
-					{
-						var name = Enum.GetName(arrangement);
-						var title = arrangement == livelyService.WallpaperArrangement
-							? $"{SelectedEmoji} {name}"
-							: name;
-
-						return new Result
-						{
-							Title = title,
-							ContextData = arrangement,
-							Score = ScoreMultiplier * (3 - (int)arrangement),
-							IcoPath = Icons.Layout,
-							Action = _ =>
-							{
-								if (arrangement == livelyService.WallpaperArrangement)
-									return false;
-
-								Wallpaper activeWallpaper = livelyService.ActiveMonitorIndexes
-									.DefaultIfEmpty()
-									.MinBy(x => x.Key)
-									.Value;
-								livelyService.Api.SetWallpaperLayout(arrangement);
-								//Task.Delay(500).Wait();
-								if (activeWallpaper != null)
-									livelyService.Api.SetWallpaper(activeWallpaper);
-								return true;
-							}
-						};
-					})
-					.ToList();
-
-			public static Result Command(Command command, PluginInitContext context, List<int> highlightData = null)
-			{
-				var autoCompleteText =
-					$"{context.CurrentPluginMetadata.ActionKeyword} {Constants.Commands.Keyword}{command.Shortcut} ";
-				return new Result
-				{
-					Title = command.Shortcut,
-					SubTitle = command.Description,
-					ContextData = command,
-					TitleHighlightData = highlightData,
-					IcoPath = command.IconPath,
-					AutoCompleteText = autoCompleteText,
-					Action = _ =>
-					{
-						context.API.ChangeQuery(autoCompleteText);
-						return false;
-					}
-				};
-			}
-
-			public static Result Wallpaper(Wallpaper wallpaper, LivelyService livelyService,
-				List<int> highlightData = null)
-			{
-				var title = wallpaper.Title;
-				var score = 0;
-				if (livelyService.IsActiveWallpaper(wallpaper, out var monitorIndexes))
-				{
-					var offset = livelyService.IsSingleDisplay
-						? $"{SelectedEmoji} | "
-						: $"{SelectedEmoji} {string.Join(", ", monitorIndexes)} | ";
-					title = OffsetTitle(title, offset, highlightData);
-					score = 2 * ScoreMultiplier;
-				}
-
-				return new Result
-				{
-					Title = title,
-					SubTitle = wallpaper.Desc,
-					IcoPath = wallpaper.IconPath,
-					Score = score,
-					ContextData = wallpaper,
-					PreviewPanel = wallpaper.GetUserControl(),
-					TitleHighlightData = highlightData,
-					Action = _ =>
-					{
-						livelyService.Api.SetWallpaper(wallpaper);
-						return true;
-					}
-				};
-			}
-		}
 
 		//Invert boolean maybe
 		public static string AppendAllMonitors(bool singleMonitor) => singleMonitor ? "" : " on all monitors";
@@ -286,10 +43,12 @@ namespace Flow.Launcher.Plugin.Lively
 			}
 		};
 
-		public static List<Result> ToResultList<T>(this IEnumerable<T> source, LivelyService livelyService,
+
+		public static List<Result> ToResultList<T>(this IEnumerable<T> source,
 			PluginInitContext context,
+			LivelyService livelyService,
 			string query = null)
-			where T : ISearchable
+			where T : ISearchableResult
 		{
 			var validQuery = !string.IsNullOrWhiteSpace(query);
 			var results = new List<Result>();
@@ -305,13 +64,7 @@ namespace Flow.Launcher.Plugin.Lively
 						continue;
 				}
 
-				Result result = element switch
-				{
-					Command command => For.Command(command, context, highlightData),
-					Wallpaper wallpaper => For.Wallpaper(wallpaper, livelyService, highlightData),
-					_ => throw new InvalidCastException()
-				};
-				results.Add(result);
+				results.Add(element.ToResult(context, livelyService, highlightData));
 			}
 
 			return results;
@@ -331,6 +84,7 @@ namespace Flow.Launcher.Plugin.Lively
 			}
 		};
 
+		// TODO: move this to CommandBase.cs;
 		public static Result ViewCommandResult(PluginInitContext context)
 		{
 			var autoCompleteText = $"{context.CurrentPluginMetadata.ActionKeyword} {Constants.Commands.Keyword}";
@@ -357,67 +111,6 @@ namespace Flow.Launcher.Plugin.Lively
 			Score = 200 * ScoreMultiplier,
 			Glyph = Icons.Warning
 		};
-
-		public static List<Result> ContextMenu(Result selectedResult, LivelyService livelyService)
-		{
-			if (selectedResult.ContextData is not Wallpaper wallpaper)
-				return null;
-
-			//The readability here is pretty bad
-			var results = new List<Result>();
-			//Setting Wallpapers
-			const string setPrefix = "Set as wallpaper";
-
-			results.Add(new Result
-			{
-				Title = $"{setPrefix}{AppendAllMonitors(livelyService.IsSingleDisplay)}",
-				Score = (livelyService.MonitorCount + 2) * 2 * ScoreMultiplier,
-				IcoPath = Icons.Set,
-				Action = _ =>
-				{
-					livelyService.Api.SetWallpaper(wallpaper);
-					return true;
-				}
-			});
-
-			if (!livelyService.IsSingleDisplay)
-				livelyService.IterateMonitors(index =>
-					results.Add(GetMonitorIndexResult(setPrefix,
-						Icons.Set,
-						index,
-						(livelyService.MonitorCount + 1) * 2 * ScoreMultiplier,
-						i => livelyService.Api.SetWallpaper(wallpaper, i))));
-
-			//Closing wallpapers
-			const string closePrefix = "Close wallpaper";
-			if (!livelyService.IsActiveWallpaper(wallpaper, out var activeIndexes))
-				return results;
-
-			if (livelyService.IsSingleDisplay || activeIndexes.Count > 1)
-				results.Add(new Result
-				{
-					Title = $"{closePrefix}{AppendAllMonitors(activeIndexes.Count <= 1)}",
-					Score = (livelyService.MonitorCount + 2) * ScoreMultiplier,
-					IcoPath = Icons.Close,
-					Action = _ =>
-					{
-						livelyService.Api.CloseWallpaper();
-						return true;
-					}
-				});
-
-			if (livelyService.IsSingleDisplay)
-				return results;
-
-			results.AddRange(activeIndexes.Select(i =>
-				GetMonitorIndexResult(
-					closePrefix,
-					Icons.Close,
-					i,
-					(livelyService.MonitorCount + 1) * ScoreMultiplier,
-					index => livelyService.Api.CloseWallpaper(index))));
-			return results;
-		}
 
 		public static List<Result> SettingsErrors(Settings settings) =>
 			settings.Errors.Select(e => new Result

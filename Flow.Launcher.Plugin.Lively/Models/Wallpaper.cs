@@ -22,7 +22,7 @@ namespace Flow.Launcher.Plugin.Lively.Models
 		//string Id,
 		//List<string> Tags,
 		//int Version
-	) : ISearchable, ISearchableResult // TODO: maybe IResultContextMenu?
+	) : ISearchableResult, IHasContextMenu
 	{
 		// Could move this to another type?
 		/// <summary>
@@ -54,12 +54,10 @@ namespace Flow.Launcher.Plugin.Lively.Models
 				Path.GetFileName(Path.TrimEndingDirectorySeparator(folderPath)));
 		}
 
-		string ISearchable.SearchableString => Title;
-
 		string ISearchableResult.SearchableString => Title;
 
 		Result ISearchableResult.ToResult(PluginInitContext context, LivelyService livelyService,
-			List<int> highlightData = null)
+			List<int> highlightData)
 		{
 			var title = Title;
 			var score = 0;
@@ -87,6 +85,64 @@ namespace Flow.Launcher.Plugin.Lively.Models
 					return true;
 				}
 			};
+		}
+
+		public List<Result> ToContextMenu(LivelyService livelyService)
+		{
+			//The readability here is pretty bad
+			var results = new List<Result>();
+			//Setting Wallpapers
+			const string setPrefix = "Set as wallpaper";
+
+			results.Add(new Result
+			{
+				Title = $"{setPrefix}{Results.AppendAllMonitors(livelyService.IsSingleDisplay)}",
+				Score = (livelyService.MonitorCount + 2) * 2 * Results.ScoreMultiplier,
+				IcoPath = Constants.Icons.Set,
+				Action = _ =>
+				{
+					livelyService.Api.SetWallpaper(this);
+					return true;
+				}
+			});
+
+			if (!livelyService.IsSingleDisplay)
+				livelyService.IterateMonitors(index =>
+					results.Add(Results.GetMonitorIndexResult(setPrefix,
+						Constants.Icons.Set,
+						index,
+						(livelyService.MonitorCount + 1) * 2 * Results.ScoreMultiplier,
+						i => livelyService.Api.SetWallpaper(this, i))));
+
+			//Closing wallpapers
+			const string closePrefix = "Close wallpaper";
+			if (!livelyService.IsActiveWallpaper(this, out var activeIndexes))
+				return results;
+
+			if (livelyService.IsSingleDisplay || activeIndexes.Count > 1)
+				results.Add(new Result
+				{
+					Title = $"{closePrefix}{Results.AppendAllMonitors(activeIndexes.Count <= 1)}",
+					Score = (livelyService.MonitorCount + 2) * Results.ScoreMultiplier,
+					IcoPath = Constants.Icons.Close,
+					Action = _ =>
+					{
+						livelyService.Api.CloseWallpaper();
+						return true;
+					}
+				});
+
+			if (livelyService.IsSingleDisplay)
+				return results;
+
+			results.AddRange(activeIndexes.Select(i =>
+				Results.GetMonitorIndexResult(
+					closePrefix,
+					Constants.Icons.Close,
+					i,
+					(livelyService.MonitorCount + 1) * Results.ScoreMultiplier,
+					index => livelyService.Api.CloseWallpaper(index))));
+			return results;
 		}
 	}
 }
