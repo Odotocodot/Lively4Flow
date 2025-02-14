@@ -20,7 +20,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 				IcoPath = Constants.Icons.Random,
 				Action = _ =>
 				{
-					SetWallpaperCommand.Execute(livelyService, "random");
+					SetWallpaperCommand.Execute(livelyService);
 					return true;
 				}
 			});
@@ -32,7 +32,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 					Constants.Icons.Random,
 					index,
 					(livelyService.MonitorCount + 1) * ResultsHelper.ScoreMultiplier,
-					i => SetWallpaperCommand.Execute(livelyService, "random", i))));
+					i => SetWallpaperCommand.Execute(livelyService, null, i))));
 
 			return results;
 		}

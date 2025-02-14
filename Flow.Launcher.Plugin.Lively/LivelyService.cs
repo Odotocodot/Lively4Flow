@@ -178,7 +178,6 @@ namespace Flow.Launcher.Plugin.Lively
 			return wallpaper;
 		}
 
-		//TODO: move to Wallpaper.cs?
 		public bool IsActiveWallpaper(Wallpaper wallpaper, out List<int> livelyMonitorIndexes)
 		{
 			livelyMonitorIndexes = wallpapers[wallpaper];

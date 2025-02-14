@@ -9,18 +9,26 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 		protected override string Description { get; } = "Search and set wallpapers";
 		protected override string IconPath { get; } = Constants.Icons.Set;
 
-		public static void Execute(LivelyService livelyService, Wallpaper wallpaper, int? monitorIndex = null)
+		public static void Execute(LivelyService livelyService, Wallpaper wallpaper = null,
+			int? monitorIndex = null)
 		{
-			Execute(livelyService, wallpaper.LivelyFolderPath, monitorIndex);
+			Execute(livelyService, wallpaper == null ? "random" : wallpaper.LivelyFolderPath, monitorIndex);
 		}
 
-		public static void Execute(LivelyService livelyService, string wallpaperPath, int? monitorIndex = null)
+		private static void Execute(LivelyService livelyService, string wallpaperPath, int? monitorIndex = null)
 		{
 			var args = $"setwp --file \"{wallpaperPath}\"";
-			if (!livelyService.IsSingleDisplay && monitorIndex.HasValue)
-				args += $" --monitor {monitorIndex.Value}";
 
-			Execute(args);
+			if (monitorIndex.HasValue)
+			{
+				Execute($"{args} --monitor {monitorIndex.Value}");
+				return;
+			}
+
+			if (livelyService.IsSingleDisplay)
+				Execute(args);
+			else
+				livelyService.IterateMonitors(index => Execute($"{args} --monitor {index}"));
 		}
 
 		public override List<Result> CommandResults(PluginInitContext context, LivelyService livelyService,
