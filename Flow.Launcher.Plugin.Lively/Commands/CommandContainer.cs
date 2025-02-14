@@ -27,7 +27,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 			};
 
 			for (var i = 0; i < commands.Count; i++)
-				commands[i].Score = (commands.Count - i) * Results.ScoreMultiplier;
+				commands[i].Score = (commands.Count - i) * ResultsHelper.ScoreMultiplier;
 		}
 
 		public Result ViewCommandResult(PluginInitContext context)
@@ -38,7 +38,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 			{
 				Title = "View Lively commands",
 				SubTitle = $"Type '{Constants.Commands.Keyword}' or select this result to view commands",
-				Score = 100 * Results.ScoreMultiplier,
+				Score = 100 * ResultsHelper.ScoreMultiplier,
 				IcoPath = Constants.Icons.Lively,
 				AutoCompleteText = autoCompleteText,
 				Action = _ =>

@@ -19,7 +19,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 		{
 			var activeMonitors = livelyService.ActiveMonitorIndexes;
 			if (!activeMonitors.Any())
-				return Results.SingleResult("No active Lively wallpapers", Constants.Icons.Close, null, false);
+				return ResultsHelper.SingleResult("No active Lively wallpapers", Constants.Icons.Close, null, false);
 
 			var results = new List<Result>();
 			const string prefix = "Close active wallpaper";
@@ -27,11 +27,11 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 			if (livelyService.IsSingleDisplay || activeMonitors.Count > 1)
 				results.Add(new Result
 				{
-					Title = $"{prefix}{Results.AppendAllMonitors(activeMonitors.Count <= 1)}",
+					Title = $"{prefix}{ResultsHelper.AppendAllMonitors(activeMonitors.Count <= 1)}",
 					SubTitle = activeMonitors.Count <= 1
 						? $"Current Wallpaper: {activeMonitors.First().Value.Title}"
 						: null,
-					Score = (livelyService.MonitorCount + 2) * Results.ScoreMultiplier,
+					Score = (livelyService.MonitorCount + 2) * ResultsHelper.ScoreMultiplier,
 					IcoPath = Constants.Icons.Close,
 					Action = _ =>
 					{
@@ -44,10 +44,10 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 				return results;
 
 			results.AddRange(activeMonitors.Select(activeMonitor =>
-				Results.GetMonitorIndexResult(prefix,
+				ResultsHelper.GetMonitorIndexResult(prefix,
 					Constants.Icons.Close,
 					activeMonitor.Key,
-					(livelyService.MonitorCount + 1) * Results.ScoreMultiplier,
+					(livelyService.MonitorCount + 1) * ResultsHelper.ScoreMultiplier,
 					Execute,
 					$"Current Wallpaper: {activeMonitor.Value.Title}")));
 

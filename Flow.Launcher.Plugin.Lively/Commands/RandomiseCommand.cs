@@ -15,8 +15,8 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 			const string prefix = "Set a random wallpaper";
 			results.Add(new Result
 			{
-				Title = $"{prefix}{Results.AppendAllMonitors(livelyService.IsSingleDisplay)}",
-				Score = (livelyService.MonitorCount + 2) * Results.ScoreMultiplier,
+				Title = $"{prefix}{ResultsHelper.AppendAllMonitors(livelyService.IsSingleDisplay)}",
+				Score = (livelyService.MonitorCount + 2) * ResultsHelper.ScoreMultiplier,
 				IcoPath = Constants.Icons.Random,
 				Action = _ =>
 				{
@@ -28,10 +28,10 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 				return results;
 
 			livelyService.IterateMonitors(index =>
-				results.Add(Results.GetMonitorIndexResult(prefix,
+				results.Add(ResultsHelper.GetMonitorIndexResult(prefix,
 					Constants.Icons.Random,
 					index,
-					(livelyService.MonitorCount + 1) * Results.ScoreMultiplier,
+					(livelyService.MonitorCount + 1) * ResultsHelper.ScoreMultiplier,
 					i => SetWallpaperCommand.Execute(livelyService, "random", i))));
 
 			return results;

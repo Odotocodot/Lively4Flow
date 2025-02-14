@@ -18,14 +18,14 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 				{
 					var name = Enum.GetName(arrangement);
 					var title = arrangement == livelyService.WallpaperArrangement
-						? $"{Results.SelectedEmoji} {name}"
+						? $"{ResultsHelper.SelectedEmoji} {name}"
 						: name;
 
 					return new Result
 					{
 						Title = title,
 						ContextData = arrangement,
-						Score = Results.ScoreMultiplier * (3 - (int)arrangement),
+						Score = ResultsHelper.ScoreMultiplier * (3 - (int)arrangement),
 						IcoPath = Constants.Icons.Layout,
 						Action = _ =>
 						{

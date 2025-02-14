@@ -28,7 +28,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 				{
 					Title = $"Set wallpaper volume{titleSuffix}",
 					SubTitle = "Type a value between 0 and 100 to specify",
-					Score = 3 * Results.ScoreMultiplier,
+					Score = 3 * ResultsHelper.ScoreMultiplier,
 					IcoPath = Constants.Icons.Volume,
 					Action = _ =>
 					{
@@ -40,7 +40,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 				new()
 				{
 					Title = "Set wallpaper volume to 0 (Mute)",
-					Score = 2 * Results.ScoreMultiplier,
+					Score = 2 * ResultsHelper.ScoreMultiplier,
 					IcoPath = Constants.Icons.Volume,
 					Action = _ =>
 					{
@@ -51,7 +51,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 				new()
 				{
 					Title = "Set wallpaper volume to 50",
-					Score = 1 * Results.ScoreMultiplier,
+					Score = 1 * ResultsHelper.ScoreMultiplier,
 					IcoPath = Constants.Icons.Volume,
 					Action = _ =>
 					{

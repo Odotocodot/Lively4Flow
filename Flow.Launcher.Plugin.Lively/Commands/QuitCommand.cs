@@ -9,6 +9,6 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 		protected override string IconPath { get; } = Constants.Icons.Quit;
 
 		public override List<Result> CommandResults(PluginInitContext context, LivelyService livelyService,
-			string query = null) => Results.SingleResult(Description, IconPath, () => Execute("--shutdown true"), true);
+			string query = null) => ResultsHelper.SingleResult(Description, IconPath, () => Execute("--shutdown true"), true);
 	}
 }

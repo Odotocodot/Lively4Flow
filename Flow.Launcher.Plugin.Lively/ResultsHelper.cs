@@ -8,7 +8,7 @@ namespace Flow.Launcher.Plugin.Lively
 {
 	using Icons = Constants.Icons;
 
-	public static class Results
+	public static class ResultsHelper
 	{
 		public const string SelectedEmoji = "\u2605"; //or ⭐\u2b50
 		public const int ScoreMultiplier = 1000;

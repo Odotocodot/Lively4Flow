@@ -47,10 +47,10 @@ namespace Flow.Launcher.Plugin.Lively.Models
 			if (livelyService.IsActiveWallpaper(this, out var monitorIndexes))
 			{
 				var offset = livelyService.IsSingleDisplay
-					? $"{Results.SelectedEmoji} | "
-					: $"{Results.SelectedEmoji} {string.Join(", ", monitorIndexes)} | ";
-				title = Results.OffsetTitle(title, offset, highlightData);
-				score = 2 * Results.ScoreMultiplier;
+					? $"{ResultsHelper.SelectedEmoji} | "
+					: $"{ResultsHelper.SelectedEmoji} {string.Join(", ", monitorIndexes)} | ";
+				title = ResultsHelper.OffsetTitle(title, offset, highlightData);
+				score = 2 * ResultsHelper.ScoreMultiplier;
 			}
 
 			return new Result
@@ -79,8 +79,8 @@ namespace Flow.Launcher.Plugin.Lively.Models
 
 			results.Add(new Result
 			{
-				Title = $"{setPrefix}{Results.AppendAllMonitors(livelyService.IsSingleDisplay)}",
-				Score = (livelyService.MonitorCount + 2) * 2 * Results.ScoreMultiplier,
+				Title = $"{setPrefix}{ResultsHelper.AppendAllMonitors(livelyService.IsSingleDisplay)}",
+				Score = (livelyService.MonitorCount + 2) * 2 * ResultsHelper.ScoreMultiplier,
 				IcoPath = Constants.Icons.Set,
 				Action = _ =>
 				{
@@ -91,10 +91,10 @@ namespace Flow.Launcher.Plugin.Lively.Models
 
 			if (!livelyService.IsSingleDisplay)
 				livelyService.IterateMonitors(index =>
-					results.Add(Results.GetMonitorIndexResult(setPrefix,
+					results.Add(ResultsHelper.GetMonitorIndexResult(setPrefix,
 						Constants.Icons.Set,
 						index,
-						(livelyService.MonitorCount + 1) * 2 * Results.ScoreMultiplier,
+						(livelyService.MonitorCount + 1) * 2 * ResultsHelper.ScoreMultiplier,
 						i => SetWallpaperCommand.Execute(livelyService, this, i))));
 
 			//Closing wallpapers
@@ -105,8 +105,8 @@ namespace Flow.Launcher.Plugin.Lively.Models
 			if (livelyService.IsSingleDisplay || activeIndexes.Count > 1)
 				results.Add(new Result
 				{
-					Title = $"{closePrefix}{Results.AppendAllMonitors(activeIndexes.Count <= 1)}",
-					Score = (livelyService.MonitorCount + 2) * Results.ScoreMultiplier,
+					Title = $"{closePrefix}{ResultsHelper.AppendAllMonitors(activeIndexes.Count <= 1)}",
+					Score = (livelyService.MonitorCount + 2) * ResultsHelper.ScoreMultiplier,
 					IcoPath = Constants.Icons.Close,
 					Action = _ =>
 					{
@@ -119,11 +119,11 @@ namespace Flow.Launcher.Plugin.Lively.Models
 				return results;
 
 			results.AddRange(activeIndexes.Select(i =>
-				Results.GetMonitorIndexResult(
+				ResultsHelper.GetMonitorIndexResult(
 					closePrefix,
 					Constants.Icons.Close,
 					i,
-					(livelyService.MonitorCount + 1) * Results.ScoreMultiplier,
+					(livelyService.MonitorCount + 1) * ResultsHelper.ScoreMultiplier,
 					CloseWallpaperCommand.Execute)));
 			return results;
 		}

@@ -48,7 +48,7 @@ namespace Flow.Launcher.Plugin.Lively
 		public async Task<List<Result>> QueryAsync(Query query, CancellationToken token)
 		{
 			if (settings.HasErrors)
-				return Results.SettingsErrors(settings);
+				return ResultsHelper.SettingsErrors(settings);
 
 			lastQuery = query;
 
@@ -56,7 +56,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 			var results = GetResults(query);
 			if (!livelyService.IsLivelyRunning)
-				results.Insert(0, Results.LivelyNotRunningResult());
+				results.Insert(0, ResultsHelper.LivelyNotRunningResult());
 			return results;
 		}
 
