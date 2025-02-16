@@ -17,11 +17,12 @@ namespace Flow.Launcher.Plugin.Lively
 		private readonly PluginInitContext context;
 		private readonly Settings settings;
 
-		private readonly ConcurrentDictionary<Wallpaper, List<int>> wallpapers = new();
+		private readonly ConcurrentDictionary<Wallpaper, SortedSet<int>> wallpapers = new();
 		private readonly ConcurrentDictionary<int, Wallpaper> activeMonitorIndexes = new();
 
 		private bool canLoadData;
 		private CancellationTokenSource ctSource;
+		private readonly JsonSerializerOptions jsonOptions = JsonSerializerOptions.Default;
 		public bool IsLivelyRunning { get; private set; }
 		public IEnumerable<Wallpaper> Wallpapers => wallpapers.Keys;
 		public IReadOnlyDictionary<int, Wallpaper> ActiveMonitorIndexes => activeMonitorIndexes;
@@ -64,10 +65,12 @@ namespace Flow.Launcher.Plugin.Lively
 
 			try
 			{
+				wallpapers.Clear();
+				activeMonitorIndexes.Clear();
 				await Parallel.ForEachAsync(
 					LoadWallpaperFolders(wallpaperFolders, parallelOptions.MaxDegreeOfParallelism, ctSource),
 					parallelOptions,
-					async (wallpaperFolder, ct) => await LoadAllWallpapers(
+					async (wallpaperFolder, ct) => await LoadWallpaper(
 						livelyWallpaperLibrary,
 						wallpaperFolder,
 						await currentWallpaperTask,
@@ -79,7 +82,7 @@ namespace Flow.Launcher.Plugin.Lively
 			}
 		}
 
-		private async ValueTask LoadAllWallpapers(string livelyWallpaperLibrary, string wallpaperFolder,
+		private async ValueTask LoadWallpaper(string livelyWallpaperLibrary, string wallpaperFolder,
 			WallpaperLayout[] currentWallpapers, CancellationToken token)
 		{
 			if (token.IsCancellationRequested)
@@ -88,7 +91,12 @@ namespace Flow.Launcher.Plugin.Lively
 			Wallpaper wallpaper;
 			try
 			{
-				wallpaper = await LoadWallpaper(livelyWallpaperLibrary, wallpaperFolder, token);
+				//Context.API.LogInfo(nameof(LivelyService), "Creating Model:" + wallpaperFolder);
+				var path = Path.Combine(wallpaperFolder, Constants.Files.LivelyInfo);
+				await using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+				wallpaper = await JsonSerializer.DeserializeAsync<Wallpaper>(file, jsonOptions, token);
+				wallpaper.Init(wallpaperFolder, livelyWallpaperLibrary);
+				//Context.API.LogInfo(nameof(LivelyService), "Finished Model:" + wallpaperFolder);
 			}
 			catch (Exception e) when (e is FileNotFoundException or JsonException)
 			{
@@ -98,18 +106,17 @@ namespace Flow.Launcher.Plugin.Lively
 				return;
 			}
 
-			List<int> activeIndexes = null;
+			SortedSet<int> activeIndexes = null;
 			for (var i = 0; i < currentWallpapers.Length; i++)
 			{
 				WallpaperLayout currentWallpaper = currentWallpapers[i];
 				if (wallpaper.LivelyFolderPath != currentWallpaper.LivelyInfoPath)
 					continue;
-				activeIndexes ??= new List<int>();
+				activeIndexes ??= new SortedSet<int>();
 				activeIndexes.Add(currentWallpaper.LivelyScreen.Index);
 				activeMonitorIndexes.TryAdd(currentWallpaper.LivelyScreen.Index, wallpaper);
 			}
 
-			activeIndexes?.Sort();
 			wallpapers.TryAdd(wallpaper, activeIndexes);
 			//Context.API.LogInfo(nameof(LivelyService), "ADDED WALLPAPER TO DICT - " + wallpaperFolder);
 		}
@@ -117,8 +124,7 @@ namespace Flow.Launcher.Plugin.Lively
 		private async ValueTask<(string, IEnumerable<string>)> LoadLivelySettings(CancellationToken token)
 		{
 			await using var file = new FileStream(settings.LivelySettingsJsonPath, FileMode.Open, FileAccess.Read);
-			var livelySettings =
-				await JsonSerializer.DeserializeAsync<LivelySettings>(file, JsonSerializerOptions.Default, token);
+			var livelySettings = await JsonSerializer.DeserializeAsync<LivelySettings>(file, jsonOptions, token);
 			WallpaperArrangement = livelySettings.WallpaperArrangement;
 
 			var prefix = settings.InstallType == LivelyInstallType.MicrosoftStore &&
@@ -144,7 +150,7 @@ namespace Flow.Launcher.Plugin.Lively
 			await using var file = new FileStream(path, FileMode.Open, FileAccess.Read);
 
 			var wallpaperLayout = await JsonSerializer.DeserializeAsync<WallpaperLayout[]>(file,
-				JsonSerializerOptions.Default,
+				jsonOptions,
 				token);
 
 			return wallpaperLayout;
@@ -165,20 +171,7 @@ namespace Flow.Launcher.Plugin.Lively
 				.WithCancellation(cts.Token)
 				.WithDegreeOfParallelism(degreeOfParallelism);
 
-		private static async ValueTask<Wallpaper> LoadWallpaper(string livelyWallpaperLibrary, string wallpaperFolder,
-			CancellationToken token)
-		{
-			//Context.API.LogInfo(nameof(LivelyService), "Creating Model:" + wallpaperFolder);
-			var path = Path.Combine(wallpaperFolder, Constants.Files.LivelyInfo);
-			await using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-			var wallpaper =
-				await JsonSerializer.DeserializeAsync<Wallpaper>(file, JsonSerializerOptions.Default, token);
-			wallpaper.Init(wallpaperFolder, livelyWallpaperLibrary);
-			//Context.API.LogInfo(nameof(LivelyService), "Finished Model:" + wallpaperFolder);
-			return wallpaper;
-		}
-
-		public bool IsActiveWallpaper(Wallpaper wallpaper, out List<int> livelyMonitorIndexes)
+		public bool IsActiveWallpaper(Wallpaper wallpaper, out IReadOnlyCollection<int> livelyMonitorIndexes)
 		{
 			livelyMonitorIndexes = wallpapers[wallpaper];
 			return livelyMonitorIndexes?.Any() == true;
@@ -196,9 +189,41 @@ namespace Flow.Launcher.Plugin.Lively
 		public void DisableLoading()
 		{
 			canLoadData = false;
-			wallpapers.Clear();
-			activeMonitorIndexes.Clear();
 			ctSource?.Dispose();
 		}
+
+		/// These functions are used to update the data in plugin so that the Flow Launcher window displays the correct
+		/// information when reopened. Since there is a delay between the file that Lively Wallpaper uses being updated
+		/// and a command being called.
+		/// Moreover, all the data updates from these functions gets is essentially only used for one frame. The correct
+		/// information gets displayed once the user changes the query e.g. pressing space.
+		/// Doesn't correctly work for the randomise command as there is no way to know which wallpaper was set to
+		/// quickly update the UI.
+
+		#region Quick UI update
+
+		public void UIUpdateSetWallpaper(Wallpaper wallpaper, int monitorIndex)
+		{
+			if (activeMonitorIndexes.TryRemove(monitorIndex, out Wallpaper oldWallpaper))
+				// Never null. Since if its in activeMonitorIndexes it has active monitor index
+				wallpapers[oldWallpaper].Remove(monitorIndex);
+
+			var activeIndexes = wallpapers[wallpaper];
+			activeIndexes ??= new SortedSet<int>();
+			activeIndexes.Add(monitorIndex);
+			activeMonitorIndexes.AddOrUpdate(monitorIndex, wallpaper, (_, _) => wallpaper);
+		}
+
+		public void UIUpdateCloseWallpaper(int monitorIndex)
+		{
+			//TODO
+		}
+
+		public void UIUpdateChangeLayout(WallpaperArrangement wallpaperArrangement)
+		{
+			//TODO
+		}
+
+		#endregion
 	}
 }

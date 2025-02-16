@@ -11,7 +11,8 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 		public int Score { private get; set; }
 		public string SearchableString => Shortcut;
 
-		protected static void Execute(string args)
+		// Maybe make async?
+		private protected static void Execute(string args)
 		{
 			var psi = new ProcessStartInfo(Constants.CommandUtility, args) { CreateNoWindow = true };
 			using Process process = Process.Start(psi);

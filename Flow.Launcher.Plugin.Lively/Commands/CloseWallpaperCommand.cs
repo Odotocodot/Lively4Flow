@@ -35,7 +35,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 					IcoPath = Constants.Icons.Close,
 					Action = _ =>
 					{
-						Execute(-1);
+						Execute();
 						return true;
 					}
 				});
@@ -44,7 +44,8 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 				return results;
 
 			results.AddRange(activeMonitors.Select(activeMonitor =>
-				ResultsHelper.GetMonitorIndexResult(prefix,
+				ResultsHelper.GetMonitorIndexResult(
+					prefix,
 					Constants.Icons.Close,
 					activeMonitor.Key,
 					(livelyService.MonitorCount + 1) * ResultsHelper.ScoreMultiplier,
