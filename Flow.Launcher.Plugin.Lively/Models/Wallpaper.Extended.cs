@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Flow.Launcher.Plugin.Lively.Commands;
 using Flow.Launcher.Plugin.Lively.UI;
 using static Flow.Launcher.Plugin.Lively.ResultsHelper;
@@ -48,8 +49,8 @@ namespace Flow.Launcher.Plugin.Lively.Models
 			if (livelyService.IsActiveWallpaper(this, out var monitorIndexes))
 			{
 				var offset = livelyService.IsSingleDisplay
-					? $"{SelectedEmoji} | "
-					: $"{SelectedEmoji} {string.Join(", ", monitorIndexes)} | ";
+					? $"{SelectedEmoji} "
+					: $"[{SelectedEmoji} {string.Join(", ", monitorIndexes)}] ";
 				title = OffsetTitle(title, offset, highlightData);
 				score = 2 * ScoreMultiplier;
 			}
@@ -65,13 +66,13 @@ namespace Flow.Launcher.Plugin.Lively.Models
 				TitleHighlightData = highlightData,
 				Action = _ =>
 				{
-					SetWallpaperCommand.Execute(livelyService, this);
+					Task.Run(() => SetWallpaperCommand.Execute(livelyService, this));
 					return true;
 				}
 			};
 		}
 
-		public List<Result> ToContextMenu(LivelyService livelyService)
+		List<Result> IHasContextMenu.ToContextMenu(LivelyService livelyService)
 		{
 			//The readability here is pretty bad
 			var results = new List<Result>();
