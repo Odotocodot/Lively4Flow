@@ -200,28 +200,52 @@ namespace Flow.Launcher.Plugin.Lively
 		/// Doesn't correctly work for the randomise command as there is no way to know which wallpaper was set to
 		/// quickly update the UI.
 
-		#region Quick UI update
+		#region Quick UI Update
 
-		public void UIUpdateSetWallpaper(Wallpaper wallpaper, int monitorIndex)
+		private bool uiRefreshRequired;
+
+		public bool UIRefreshRequired()
 		{
+			var temp = uiRefreshRequired;
+			if (uiRefreshRequired)
+				uiRefreshRequired = false;
+			return temp;
+		}
+
+		public void UIUpdateSetWallpaper(Wallpaper wallpaper, int monitorIndex = 1)
+		{
+			uiRefreshRequired = true;
 			if (activeMonitorIndexes.TryRemove(monitorIndex, out Wallpaper oldWallpaper))
 				// Never null. Since if its in activeMonitorIndexes it has active monitor index
 				wallpapers[oldWallpaper].Remove(monitorIndex);
 
-			var activeIndexes = wallpapers[wallpaper];
+			wallpapers.TryGetValue(wallpaper, out var activeIndexes);
 			activeIndexes ??= new SortedSet<int>();
 			activeIndexes.Add(monitorIndex);
+			wallpapers.AddOrUpdate(wallpaper, activeIndexes, (_, _) => activeIndexes);
 			activeMonitorIndexes.AddOrUpdate(monitorIndex, wallpaper, (_, _) => wallpaper);
 		}
 
-		public void UIUpdateCloseWallpaper(int monitorIndex)
+		public void UIUpdateCloseWallpaper(int monitorIndex = -1)
 		{
-			//TODO
+			uiRefreshRequired = true;
+			if (monitorIndex == -1)
+				IterateMonitors(RemoveWallpaper);
+			else
+				RemoveWallpaper(monitorIndex);
+			return;
+
+			void RemoveWallpaper(int i)
+			{
+				if (activeMonitorIndexes.TryRemove(i, out Wallpaper oldWallpaper))
+					wallpapers[oldWallpaper].Remove(i);
+			}
 		}
 
 		public void UIUpdateChangeLayout(WallpaperArrangement wallpaperArrangement)
 		{
-			//TODO
+			uiRefreshRequired = true;
+			WallpaperArrangement = wallpaperArrangement;
 		}
 
 		#endregion

@@ -36,13 +36,15 @@ namespace Flow.Launcher.Plugin.Lively
 				return;
 
 			if (args.IsVisible)
+			{
 				livelyService.EnableLoading();
-			// TODO: reimplement refreshing UI
-			// if (lastQuery?.ActionKeyword == context.CurrentPluginMetadata.ActionKeyword
-			//     && livelyService.Api.UIRefreshRequired())
-			// 	context.API.ReQuery();
+			}
 			else
+			{
 				livelyService.DisableLoading();
+				if (lastQuery?.ActionKeyword == context.CurrentPluginMetadata.ActionKeyword && livelyService.UIRefreshRequired())
+					context.API.ReQuery(false);
+			}
 		}
 
 		public async Task<List<Result>> QueryAsync(Query query, CancellationToken token)

@@ -39,6 +39,17 @@ namespace Flow.Launcher.Plugin.Lively.Models
 				Path.GetFileName(Path.TrimEndingDirectorySeparator(folderPath)));
 		}
 
+		public virtual bool Equals(Wallpaper other)
+		{
+			if (other is null)
+				return false;
+			if (ReferenceEquals(this, other))
+				return true;
+			return FolderPath == other.FolderPath;
+		}
+
+		public override int GetHashCode() => FolderPath != null ? FolderPath.GetHashCode() : 0;
+
 		string ISearchableResult.SearchableString => Title;
 
 		Result ISearchableResult.ToResult(PluginInitContext context, LivelyService livelyService,
@@ -67,6 +78,7 @@ namespace Flow.Launcher.Plugin.Lively.Models
 				Action = _ =>
 				{
 					Task.Run(() => SetWallpaperCommand.Execute(livelyService, this));
+					//SetWallpaperCommand.Execute(livelyService, this);
 					return true;
 				}
 			};
@@ -86,6 +98,7 @@ namespace Flow.Launcher.Plugin.Lively.Models
 				IcoPath = Constants.Icons.Set,
 				Action = _ =>
 				{
+					//Task.Run(() => SetWallpaperCommand.Execute(livelyService, this));
 					SetWallpaperCommand.Execute(livelyService, this);
 					return true;
 				}
@@ -112,7 +125,7 @@ namespace Flow.Launcher.Plugin.Lively.Models
 					IcoPath = Constants.Icons.Close,
 					Action = _ =>
 					{
-						CloseWallpaperCommand.Execute();
+						CloseWallpaperCommand.Execute(livelyService);
 						return true;
 					}
 				});
@@ -126,7 +139,7 @@ namespace Flow.Launcher.Plugin.Lively.Models
 					Constants.Icons.Close,
 					i,
 					(livelyService.MonitorCount + 1) * ScoreMultiplier,
-					CloseWallpaperCommand.Execute)));
+					monitorIndex => CloseWallpaperCommand.Execute(livelyService, monitorIndex))));
 			return results;
 		}
 	}

@@ -9,9 +9,10 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 		protected override string Description { get; } = "Close a wallpaper";
 		protected override string IconPath { get; } = Constants.Icons.Volume;
 
-		public static void Execute(int monitorIndex = -1)
+		public static void Execute(LivelyService livelyService, int monitorIndex = -1)
 		{
 			Execute($"closewp --monitor {monitorIndex}");
+			livelyService.UIUpdateCloseWallpaper(monitorIndex);
 		}
 
 		public override List<Result> CommandResults(PluginInitContext context, LivelyService livelyService,
@@ -35,7 +36,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 					IcoPath = Constants.Icons.Close,
 					Action = _ =>
 					{
-						Execute();
+						Execute(livelyService);
 						return true;
 					}
 				});
@@ -49,7 +50,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 					Constants.Icons.Close,
 					activeMonitor.Key,
 					(livelyService.MonitorCount + 1) * ResultsHelper.ScoreMultiplier,
-					Execute,
+					monitorIndex => Execute(livelyService, monitorIndex),
 					$"Current Wallpaper: {activeMonitor.Value.Title}")));
 
 			return results;

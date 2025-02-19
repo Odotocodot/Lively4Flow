@@ -24,7 +24,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 					return new Result
 					{
 						Title = title,
-						ContextData = arrangement,
+						//ContextData = arrangement,
 						Score = ResultsHelper.ScoreMultiplier * (3 - (int)arrangement),
 						IcoPath = Constants.Icons.Layout,
 						Action = _ =>
@@ -37,6 +37,7 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 								.MinBy(x => x.Key)
 								.Value;
 							Execute($"--layout {Enum.GetName(arrangement)!.ToLower()}");
+							livelyService.UIUpdateChangeLayout(arrangement);
 							//Task.Delay(500).Wait();
 							if (activeWallpaper != null)
 								SetWallpaperCommand.Execute(livelyService, activeWallpaper);
