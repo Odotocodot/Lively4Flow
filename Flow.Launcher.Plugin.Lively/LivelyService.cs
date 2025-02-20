@@ -128,7 +128,7 @@ namespace Flow.Launcher.Plugin.Lively
 			WallpaperArrangement = livelySettings.WallpaperArrangement;
 
 			var prefix = settings.InstallType == LivelyInstallType.MicrosoftStore &&
-			             livelySettings.WallpaperDir == Constants.Folders.DefaultWallpaperFolder
+						 livelySettings.WallpaperDir == Constants.Folders.DefaultWallpaperFolder
 				? Constants.Folders.DefaultWallpaperFolderMSStore
 				: livelySettings.WallpaperDir;
 
@@ -215,6 +215,11 @@ namespace Flow.Launcher.Plugin.Lively
 		public void UIUpdateSetWallpaper(Wallpaper wallpaper, int monitorIndex = 1)
 		{
 			uiRefreshRequired = true;
+
+			// If using the randomise command wallpaper will be null. Therefore, return early as Lively decides on the wallpaper, so the plugin can't quickly update the UI.
+			if (wallpaper == null)
+				return;
+
 			if (activeMonitorIndexes.TryRemove(monitorIndex, out Wallpaper oldWallpaper))
 				// Never null. Since if its in activeMonitorIndexes it has active monitor index
 				wallpapers[oldWallpaper].Remove(monitorIndex);
