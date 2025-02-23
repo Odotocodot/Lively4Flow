@@ -26,7 +26,7 @@ The first time the plugin runs it will attempt to automatically find your Lively
 If the plugin does not work out of the box, navigate to the plugin settings and make sure the `Settings.json` path and the type of installation is correct.
 
 | Installation Type | Typical `Settings.json` Path                                                                                                |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------- |
+|-------------------|-----------------------------------------------------------------------------------------------------------------------------|
 | GitHub            | `%APPDATA%\Local\Lively Wallpaper\Settings.json`                                                                            |
 | Microsoft Store   | `%APPDATA%\Local\Packages\12030rocksdanister.LivelyWallpaper_97hta09mmv6hy\LocalCache\Local\Lively Wallpaper\Settings.json` |
 
@@ -34,7 +34,7 @@ If the plugin does not work out of the box, navigate to the plugin settings and 
 
 ## Features
 
-See all your lively wallpapers at a glance.
+See all your Lively wallpapers at a glance.
 
 ```
 lw {your search}
@@ -57,7 +57,7 @@ Then, when accessing the Flow Launcher context menu (default shortcut: <kbd>⇧ 
 The plugin has a set of commands available so you don't have to navigate to Lively every time.
 
 | Command Keyword | Action                                                                |
-| --------------- | --------------------------------------------------------------------- |
+|-----------------|-----------------------------------------------------------------------|
 | `setwp`         | Search and set wallpapers                                             |
 | `random`        | Set a random wallpaper                                                |
 | `closewp`       | Close a wallpaper                                                     |

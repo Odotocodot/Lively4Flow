@@ -6,33 +6,23 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 {
 	public class CommandContainer : IEnumerable<CommandBase>
 	{
-		private readonly CommandKeyedCollection commands;
-
-		// TODO: initialise with reflection for easy. Also maybe create 
-		// a dictionary that lookups by type so can do things like:
-		// commands[typeof(SetWallpaperCommand)].Execute
-
-		public CommandContainer()
+		// TODO: initialise with reflection for ease?
+		private readonly CommandKeyedCollection commands = new()
 		{
-			commands = new CommandKeyedCollection
-			{
-				new SetWallpaperCommand(),
-				new CloseWallpaperCommand(),
-				new RandomiseCommand(),
-				new LayoutCommand(),
-				new VolumeCommand(),
-				new PlaybackCommand(),
-				new ShowCommand(),
-				new QuitCommand()
-			};
+			new SetWallpaperCommand(),
+			new CloseWallpaperCommand(),
+			new RandomiseCommand(),
+			new LayoutCommand(),
+			new VolumeCommand(),
+			new PlaybackCommand(),
+			new ShowCommand(),
+			new QuitCommand()
+		};
 
-			for (var i = 0; i < commands.Count; i++)
-				commands[i].Score = (commands.Count - i) * ResultsHelper.ScoreMultiplier;
-		}
 
 		public Result ViewCommandResult(PluginInitContext context)
 		{
-			var autoCompleteText = $"{context.CurrentPluginMetadata.ActionKeyword} {Constants.Commands.Keyword}";
+			var autoCompleteText = ResultsHelper.AutoCompleteText(context, Constants.Commands.Keyword);
 
 			return new Result
 			{

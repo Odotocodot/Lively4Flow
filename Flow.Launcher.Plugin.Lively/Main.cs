@@ -10,7 +10,7 @@ using Flow.Launcher.Plugin.Lively.UI;
 
 namespace Flow.Launcher.Plugin.Lively
 {
-	public class Main : IAsyncPlugin, ISettingProvider, IDisposable, IContextMenu
+	public class Main : IAsyncPlugin, ISettingProvider, IDisposable, IContextMenu, IReloadable
 	{
 		private PluginInitContext context;
 		private LivelyService livelyService;
@@ -27,6 +27,7 @@ namespace Flow.Launcher.Plugin.Lively
 			QuickSetup.Run(settings, this.context);
 			livelyService = new LivelyService(settings, context);
 			commands = new CommandContainer();
+			ResultsHelper.SetupScoreMultiplier(context);
 			return Task.CompletedTask;
 		}
 
@@ -42,7 +43,14 @@ namespace Flow.Launcher.Plugin.Lively
 			else
 			{
 				livelyService.DisableLoading();
-				if (lastQuery?.ActionKeyword == context.CurrentPluginMetadata.ActionKeyword && livelyService.UIRefreshRequired())
+				if (lastQuery == null)
+					return;
+
+				if (!string.IsNullOrWhiteSpace(lastQuery.ActionKeyword) //Wildcard action keyword check
+				    && lastQuery.ActionKeyword != context.CurrentPluginMetadata.ActionKeyword)
+					return;
+
+				if (livelyService.UIRefreshRequired())
 					context.API.ReQuery(false);
 			}
 		}
@@ -101,5 +109,10 @@ namespace Flow.Launcher.Plugin.Lively
 
 		public List<Result> LoadContextMenus(Result result) =>
 			result.ContextData is IHasContextMenu data ? data.ToContextMenu(livelyService) : null;
+
+		public void ReloadData()
+		{
+			ResultsHelper.SetupScoreMultiplier(context);
+		}
 	}
 }

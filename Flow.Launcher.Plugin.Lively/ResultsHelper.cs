@@ -11,7 +11,12 @@ namespace Flow.Launcher.Plugin.Lively
 	public static class ResultsHelper
 	{
 		public const string SelectedEmoji = "\u2605"; //or ⭐\u2b50
-		public const int ScoreMultiplier = 1000;
+		public static int ScoreMultiplier { get; private set; } = 1000;
+
+		public static void SetupScoreMultiplier(PluginInitContext context)
+		{
+			ScoreMultiplier = context.CurrentPluginMetadata.ActionKeyword != "*" ? 1000 : 1;
+		}
 
 		//Invert boolean maybe
 		public static string AppendAllMonitors(bool singleMonitor) => singleMonitor ? "" : " on all monitors";
@@ -99,5 +104,10 @@ namespace Flow.Launcher.Plugin.Lively
 					Glyph = Icons.Error
 				})
 				.ToList();
+
+		public static string AutoCompleteText(PluginInitContext context, string suffix) =>
+			context.CurrentPluginMetadata.ActionKeyword == "*"
+				? suffix
+				: context.CurrentPluginMetadata.ActionKeyword + suffix;
 	}
 }

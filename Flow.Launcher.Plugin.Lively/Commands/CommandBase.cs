@@ -8,7 +8,6 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 		public abstract string Shortcut { get; }
 		protected abstract string Description { get; }
 		protected abstract string IconPath { get; }
-		public int Score { private get; set; }
 		public string SearchableString => Shortcut;
 
 		// Maybe make async?
@@ -20,13 +19,11 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 
 		public Result ToResult(PluginInitContext context, LivelyService livelyService, List<int> highlightData = null)
 		{
-			var autoCompleteText =
-				$"{context.CurrentPluginMetadata.ActionKeyword} {Constants.Commands.Keyword}{Shortcut} ";
+			var autoCompleteText = ResultsHelper.AutoCompleteText(context, Constants.Commands.Keyword + Shortcut);
 			return new Result
 			{
 				Title = Shortcut,
 				SubTitle = Description,
-				Score = Score,
 				ContextData = this,
 				TitleHighlightData = highlightData,
 				IcoPath = IconPath,
