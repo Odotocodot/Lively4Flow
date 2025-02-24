@@ -108,6 +108,6 @@ namespace Flow.Launcher.Plugin.Lively
 		public static string AutoCompleteText(PluginInitContext context, string suffix) =>
 			context.CurrentPluginMetadata.ActionKeyword == "*"
 				? suffix
-				: context.CurrentPluginMetadata.ActionKeyword + " " + suffix;
+				: $"{context.CurrentPluginMetadata.ActionKeyword} {suffix}";
 	}
 }

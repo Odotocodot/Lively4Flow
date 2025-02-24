@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,13 +11,16 @@ using Flow.Launcher.Plugin.Lively.UI;
 
 namespace Flow.Launcher.Plugin.Lively
 {
-	public class Main : IAsyncPlugin, ISettingProvider, IDisposable, IContextMenu, IReloadable
+	public class Main : IAsyncPlugin, ISettingProvider, IDisposable, IContextMenu, IAsyncReloadable
 	{
 		private PluginInitContext context;
 		private LivelyService livelyService;
 		private Settings settings;
 		private CommandContainer commands;
 		private Query lastQuery;
+
+		private bool initialised;
+		private bool isLivelyRunning;
 
 		public Task InitAsync(PluginInitContext context)
 		{
@@ -38,11 +42,11 @@ namespace Flow.Launcher.Plugin.Lively
 
 			if (args.IsVisible)
 			{
-				livelyService.EnableLoading();
+				isLivelyRunning = Process.GetProcessesByName(nameof(Constants.Lively))
+					.Any(p => p.MainModule?.FileName.EndsWith($"{nameof(Constants.Lively)}.exe") == true);
 			}
 			else
 			{
-				livelyService.DisableLoading();
 				if (lastQuery == null)
 					return;
 
@@ -62,11 +66,16 @@ namespace Flow.Launcher.Plugin.Lively
 
 			lastQuery = query;
 
-			await livelyService.Load(token);
+			if (!initialised) // || query.IsReQuery
+			{
+				initialised = true;
+				await livelyService.LoadWallpapers(token);
+			}
 
 			var results = GetResults(query);
-			if (!livelyService.IsLivelyRunning)
-				results.Insert(0, ResultsHelper.LivelyNotRunningResult());
+
+			if (!isLivelyRunning)
+				results.Add(ResultsHelper.LivelyNotRunningResult());
 			return results;
 		}
 
@@ -77,7 +86,7 @@ namespace Flow.Launcher.Plugin.Lively
 				var results = livelyService.Wallpapers.OrderBy(x => x.Title)
 					.ToResultList(context, livelyService);
 				if (settings.ShowViewCommandsResult)
-					results.Insert(0, commands.ViewCommandResult(context));
+					results.Add(commands.ViewCommandResult(context));
 				return results;
 			}
 
@@ -99,20 +108,21 @@ namespace Flow.Launcher.Plugin.Lively
 				.ToResultList(context, livelyService, query.Search);
 		}
 
-		public void Dispose()
-		{
-			context.API.VisibilityChanged -= OnVisibilityChanged;
-			livelyService.DisableLoading();
-		}
-
 		public Control CreateSettingPanel() => settings.GetSettingsView(context);
 
 		public List<Result> LoadContextMenus(Result result) =>
 			result.ContextData is IHasContextMenu data ? data.ToContextMenu(livelyService) : null;
 
-		public void ReloadData()
+		public async Task ReloadDataAsync()
 		{
+			await livelyService.LoadWallpapers(CancellationToken.None);
 			ResultsHelper.SetupScoreMultiplier(context);
+		}
+
+		public void Dispose()
+		{
+			context.API.VisibilityChanged -= OnVisibilityChanged;
+			livelyService.Dispose();
 		}
 	}
 }

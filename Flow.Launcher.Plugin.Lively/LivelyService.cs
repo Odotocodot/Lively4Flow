@@ -1,29 +1,26 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Flow.Launcher.Plugin.Lively.Models;
-using Screen = System.Windows.Forms.Screen;
 
 namespace Flow.Launcher.Plugin.Lively
 {
-	public class LivelyService
+	public class LivelyService : IDisposable
 	{
 		private readonly PluginInitContext context;
 		private readonly Settings settings;
+		private readonly SemaphoreSlim semaphore = new(1, 1);
+		private readonly JsonSerializerOptions jsonOptions = JsonSerializerOptions.Default;
 
 		private readonly ConcurrentDictionary<Wallpaper, SortedSet<int>> wallpapers = new();
 		private readonly ConcurrentDictionary<int, Wallpaper> activeMonitorIndexes = new();
 
-		private bool canLoadData;
-		private CancellationTokenSource ctSource;
-		private readonly JsonSerializerOptions jsonOptions = JsonSerializerOptions.Default;
-		public bool IsLivelyRunning { get; private set; }
 		public IEnumerable<Wallpaper> Wallpapers => wallpapers.Keys;
 		public IReadOnlyDictionary<int, Wallpaper> ActiveMonitorIndexes => activeMonitorIndexes;
 		public WallpaperArrangement WallpaperArrangement { get; private set; }
@@ -38,52 +35,51 @@ namespace Flow.Launcher.Plugin.Lively
 			this.context = context;
 		}
 
-		public async ValueTask Load(CancellationToken token)
+		public async ValueTask LoadWallpapers(CancellationToken token)
 		{
-			IsLivelyRunning = Process.GetProcessesByName(nameof(Constants.Lively))
-				.Any(p => p.MainModule?.FileName.EndsWith($"{nameof(Constants.Lively)}.exe") == true);
-
-			MonitorCount = Screen.AllScreens.Length;
-
-			if (!canLoadData || token.IsCancellationRequested)
+			if (!await semaphore.WaitAsync(0, token))
 				return;
-
-			canLoadData = false;
-
-			var currentWallpaperTask = LoadActiveWallpapers(token);
-
-			var (livelyWallpaperLibrary, wallpaperFolders) = await LoadLivelySettings(token);
-
-			ctSource?.Dispose();
-			ctSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-
-			var parallelOptions = new ParallelOptions
-			{
-				MaxDegreeOfParallelism = 8,
-				CancellationToken = ctSource.Token
-			};
-
 			try
 			{
-				wallpapers.Clear();
-				activeMonitorIndexes.Clear();
-				await Parallel.ForEachAsync(
-					LoadWallpaperFolders(wallpaperFolders, parallelOptions.MaxDegreeOfParallelism, ctSource),
-					parallelOptions,
-					async (wallpaperFolder, ct) => await LoadWallpaper(
-						livelyWallpaperLibrary,
-						wallpaperFolder,
-						await currentWallpaperTask,
-						ct));
+				using var ctSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+
+				MonitorCount = Screen.AllScreens.Length; // TODO: update this on visibility changed as well
+				var (livelyWallpaperLibrary, wallpaperFolders) = await LoadLivelySettings(token);
+				var activeWallpaperTask = LoadActiveWallpapers(token);
+
+
+				if (token.IsCancellationRequested)
+					return;
+
+				var parallelOptions = new ParallelOptions
+				{
+					MaxDegreeOfParallelism = 8,
+					CancellationToken = ctSource.Token
+				};
+				try
+				{
+					wallpapers.Clear();
+					activeMonitorIndexes.Clear();
+					await Parallel.ForEachAsync(
+						GetWallpaperFolders(wallpaperFolders, parallelOptions.MaxDegreeOfParallelism, ctSource),
+						parallelOptions,
+						async (wallpaperFolder, ct) =>
+							await LoadWallpaper(livelyWallpaperLibrary, wallpaperFolder, activeWallpaperTask, ct));
+				}
+				catch (Exception e) when (e is DirectoryNotFoundException or AggregateException)
+				{
+					context.API.LogException($"{Constants.PluginName}.{nameof(LivelyService)}", "Invalid Folder Paths",
+						e);
+				}
 			}
-			catch (Exception e) when (e is DirectoryNotFoundException or AggregateException)
+			finally
 			{
-				context.API.LogException($"{Constants.PluginName}.{nameof(LivelyService)}", "Invalid Folder Paths", e);
+				semaphore.Release();
 			}
 		}
 
 		private async ValueTask LoadWallpaper(string livelyWallpaperLibrary, string wallpaperFolder,
-			WallpaperLayout[] currentWallpapers, CancellationToken token)
+			Task<WallpaperLayout[]> activeWallpaperTask, CancellationToken token)
 		{
 			if (token.IsCancellationRequested)
 				return;
@@ -106,10 +102,12 @@ namespace Flow.Launcher.Plugin.Lively
 				return;
 			}
 
+
 			SortedSet<int> activeIndexes = null;
-			for (var i = 0; i < currentWallpapers.Length; i++)
+			var activeWallpapers = await activeWallpaperTask;
+			for (var i = 0; i < activeWallpapers.Length; i++)
 			{
-				WallpaperLayout currentWallpaper = currentWallpapers[i];
+				WallpaperLayout currentWallpaper = activeWallpapers[i];
 				if (wallpaper.LivelyFolderPath != currentWallpaper.LivelyInfoPath)
 					continue;
 				activeIndexes ??= new SortedSet<int>();
@@ -121,6 +119,7 @@ namespace Flow.Launcher.Plugin.Lively
 			//Context.API.LogInfo(nameof(LivelyService), "ADDED WALLPAPER TO DICT - " + wallpaperFolder);
 		}
 
+
 		private async ValueTask<(string, IEnumerable<string>)> LoadLivelySettings(CancellationToken token)
 		{
 			await using var file = new FileStream(settings.LivelySettingsJsonPath, FileMode.Open, FileAccess.Read);
@@ -128,21 +127,22 @@ namespace Flow.Launcher.Plugin.Lively
 			WallpaperArrangement = livelySettings.WallpaperArrangement;
 
 			var prefix = settings.InstallType == LivelyInstallType.MicrosoftStore &&
-						 livelySettings.WallpaperDir == Constants.Folders.DefaultWallpaperFolder
+			             livelySettings.WallpaperDir == Constants.Folders.DefaultWallpaperFolder
 				? Constants.Folders.DefaultWallpaperFolderMSStore
 				: livelySettings.WallpaperDir;
 
 			return (livelySettings.WallpaperDir, Constants.Folders.Wallpapers.Select(dir => Path.Combine(prefix, dir)));
 		}
 
-		private async ValueTask<WallpaperLayout[]> LoadActiveWallpapers(CancellationToken token)
+		private async Task<WallpaperLayout[]> LoadActiveWallpapers(CancellationToken token)
 		{
 			var path = Path.Combine(Path.GetDirectoryName(settings.LivelySettingsJsonPath) ?? string.Empty,
 				Constants.Files.WallpaperLayout);
 
 			if (!File.Exists(path))
 			{
-				context.API.LogWarn($"{Constants.PluginName}.{nameof(LivelyService)}",
+				context.API.LogWarn(
+					$"{Constants.PluginName}.{nameof(LivelyService)}",
 					$"Could not find {Constants.Files.WallpaperLayout} file.");
 				return Array.Empty<WallpaperLayout>();
 			}
@@ -156,7 +156,7 @@ namespace Flow.Launcher.Plugin.Lively
 			return wallpaperLayout;
 		}
 
-		private ParallelQuery<string> LoadWallpaperFolders(IEnumerable<string> wallpaperFolders,
+		private ParallelQuery<string> GetWallpaperFolders(IEnumerable<string> wallpaperFolders,
 			int degreeOfParallelism, CancellationTokenSource cts) =>
 			wallpaperFolders.SelectMany(dir =>
 				{
@@ -184,12 +184,9 @@ namespace Flow.Launcher.Plugin.Lively
 				action(i);
 		}
 
-		public void EnableLoading() => canLoadData = true;
-
-		public void DisableLoading()
+		public void Dispose()
 		{
-			canLoadData = false;
-			ctSource?.Dispose();
+			semaphore.Dispose();
 		}
 
 		/// These functions are used to update the data in plugin so that the Flow Launcher window displays the correct

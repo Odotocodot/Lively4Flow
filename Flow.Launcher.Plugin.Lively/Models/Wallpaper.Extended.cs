@@ -63,7 +63,7 @@ namespace Flow.Launcher.Plugin.Lively.Models
 					? $"{SelectedEmoji} "
 					: $"[{SelectedEmoji} {string.Join(", ", monitorIndexes)}] ";
 				title = OffsetTitle(title, offset, highlightData);
-				score = 2 * ScoreMultiplier;
+				score = (livelyService.MonitorCount - monitorIndexes.Min() + 1) * ScoreMultiplier;
 			}
 
 			return new Result
