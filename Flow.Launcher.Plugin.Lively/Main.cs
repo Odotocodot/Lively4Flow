@@ -44,6 +44,7 @@ namespace Flow.Launcher.Plugin.Lively
 			{
 				isLivelyRunning = Process.GetProcessesByName(nameof(Constants.Lively))
 					.Any(p => p.MainModule?.FileName.EndsWith($"{nameof(Constants.Lively)}.exe") == true);
+				livelyService.UpdateMonitorCount();
 			}
 			else
 			{

@@ -56,16 +56,17 @@ Then, when accessing the Flow Launcher context menu (default shortcut: <kbd>⇧ 
 
 The plugin has a set of commands available so you don't have to navigate to Lively every time.
 
-| Command Keyword | Action                                                                |
-|-----------------|-----------------------------------------------------------------------|
-| `setwp`         | Search and set wallpapers                                             |
-| `random`        | Set a random wallpaper                                                |
-| `closewp`       | Close a wallpaper                                                     |
-| `volume`        | Set wallpaper volume                                                  |
-| `layout`        | Change the layout of wallpapers (`per monitor`, `span` & `duplicate`) |
-| `playback`      | Pause or play wallpaper playback                                      |
-| `show`          | Unminimize the Lively Wallpaper application                           |
-| `quit`          | Quit Lively Wallpaper                                                 |
+| Command Keyword | Action                                                                                                   |
+|-----------------|----------------------------------------------------------------------------------------------------------|
+| `setwp`         | Search and set wallpapers                                                                                |
+| `random`        | Set a random wallpaper                                                                                   |
+| `closewp`       | Close a wallpaper                                                                                        |
+| `volume`        | Set wallpaper volume                                                                                     |
+| `layout`        | Change the layout of wallpapers (`per monitor`, `span` & `duplicate`)                                    |
+| `playback`      | Pause or play wallpaper playback                                                                         |
+| `show`          | Unminimize the Lively Wallpaper application                                                              |
+| `quit`          | Quit Lively Wallpaper                                                                                    |
+| `index`         | Reindex Lively wallpapers (use if you've added/removed a wallpaper from Lively, shortcut: <kbd>F5</kbd>) |
 
 <img alt="close wallpaper" src="docs/close_wallpaper.gif" width="640"/>
 

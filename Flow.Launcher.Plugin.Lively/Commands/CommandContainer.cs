@@ -16,7 +16,8 @@ namespace Flow.Launcher.Plugin.Lively.Commands
 			new VolumeCommand(),
 			new PlaybackCommand(),
 			new ShowCommand(),
-			new QuitCommand()
+			new QuitCommand(),
+			new IndexWallpapersCommand()
 		};
 
 

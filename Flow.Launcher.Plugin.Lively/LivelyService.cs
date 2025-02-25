@@ -43,7 +43,8 @@ namespace Flow.Launcher.Plugin.Lively
 			{
 				using var ctSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
-				MonitorCount = Screen.AllScreens.Length; // TODO: update this on visibility changed as well
+				UpdateMonitorCount();
+
 				var (livelyWallpaperLibrary, wallpaperFolders) = await LoadLivelySettings(token);
 				var activeWallpaperTask = LoadActiveWallpapers(token);
 
@@ -184,6 +185,11 @@ namespace Flow.Launcher.Plugin.Lively
 				action(i);
 		}
 
+		public void UpdateMonitorCount()
+		{
+			MonitorCount = Screen.AllScreens.Length;
+		}
+
 		public void Dispose()
 		{
 			semaphore.Dispose();
@@ -217,9 +223,7 @@ namespace Flow.Launcher.Plugin.Lively
 			if (wallpaper == null)
 				return;
 
-			if (activeMonitorIndexes.TryRemove(monitorIndex, out Wallpaper oldWallpaper))
-				// Never null. Since if its in activeMonitorIndexes it has active monitor index
-				wallpapers[oldWallpaper].Remove(monitorIndex);
+			UIRemoveWallpaper(monitorIndex);
 
 			wallpapers.TryGetValue(wallpaper, out var activeIndexes);
 			activeIndexes ??= new SortedSet<int>();
@@ -232,16 +236,16 @@ namespace Flow.Launcher.Plugin.Lively
 		{
 			uiRefreshRequired = true;
 			if (monitorIndex == -1)
-				IterateMonitors(RemoveWallpaper);
+				IterateMonitors(UIRemoveWallpaper);
 			else
-				RemoveWallpaper(monitorIndex);
-			return;
+				UIRemoveWallpaper(monitorIndex);
+		}
 
-			void RemoveWallpaper(int i)
-			{
-				if (activeMonitorIndexes.TryRemove(i, out Wallpaper oldWallpaper))
-					wallpapers[oldWallpaper].Remove(i);
-			}
+		private void UIRemoveWallpaper(int i)
+		{
+			if (activeMonitorIndexes.TryRemove(i, out Wallpaper oldWallpaper))
+				// Never null. Since if its in activeMonitorIndexes it has an active monitor index...
+				wallpapers[oldWallpaper].Remove(i);
 		}
 
 		public void UIUpdateChangeLayout(WallpaperArrangement wallpaperArrangement)
