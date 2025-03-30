@@ -21,6 +21,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 		private bool initialised;
 		private bool isLivelyRunning;
+		private bool canCheckLively;
 
 		public Task InitAsync(PluginInitContext context)
 		{
@@ -42,9 +43,7 @@ namespace Flow.Launcher.Plugin.Lively
 
 			if (args.IsVisible)
 			{
-				isLivelyRunning = Process.GetProcessesByName(nameof(Constants.Lively))
-					.Any(p => p.MainModule?.FileName.EndsWith($"{nameof(Constants.Lively)}.exe") == true);
-				livelyService.UpdateMonitorCount();
+				canCheckLively = true;
 			}
 			else
 			{
@@ -74,6 +73,14 @@ namespace Flow.Launcher.Plugin.Lively
 			}
 
 			var results = GetResults(query);
+
+			if (canCheckLively)
+			{
+				isLivelyRunning = Process.GetProcessesByName(nameof(Constants.Lively))
+					.Any(p => p.MainModule?.FileName.EndsWith($"{nameof(Constants.Lively)}.exe") == true);
+				livelyService.UpdateMonitorCount();
+				canCheckLively = false;
+			}
 
 			if (!isLivelyRunning)
 				results.Add(ResultsHelper.LivelyNotRunningResult());

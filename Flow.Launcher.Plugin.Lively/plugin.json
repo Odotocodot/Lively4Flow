@@ -4,7 +4,7 @@
   "Name": "Lively Wallpaper Controller",
   "Description": "Quickly change your wallpapers in Lively Wallpaper",
   "Author": "Odotocodot",
-  "Version": "1.0.0",
+  "Version": "1.0.1",
   "Language": "csharp",
   "Website": "https://github.com/Odotocodot/Lively4Flow",
   "IcoPath": "Images\\icon.png",
